@@ -1,6 +1,5 @@
-function [energy, chprob] = rl_candyman(version, mechanism, u_sub_r, r, rev_s, r_rev, r_reco, choices, choice_trials, forcedchoices, params)
+function [energy, chprob] = rl_candyman(version, mechanism, u_sub_r, r, rev_s, r_rev, choices, choice_trials, forcedchoices, params)
 
-if isnan(r_reco)
     if numel(params) == 2
        alpha1 = params(1);
        tau = params(2);   
@@ -14,24 +13,7 @@ if isnan(r_reco)
        alpha3 = params(3);
        tau = params(4);
     end
-else
-     if numel(params) == 3
-       alpha1 = params(1);
-       alpha4 = params(2);
-       tau = params(3);   
-    elseif numel(params)  == 4
-       alpha1 = params(1);
-       alpha2 = params(2);
-       alpha4 = params(3);
-       tau = params(4);    
-    elseif numel(params)  == 5
-       alpha1 = params(1);
-       alpha2 = params(2);
-       alpha3 = params(3);
-       alpha4 = params(4);
-       tau = params(5);
-    end
-end    
+ 
 
    %% update values in learning phase - single updating with Rescorla-Wagner algorithm
       inival = 0.5; %value vectors initialized with .5
@@ -73,7 +55,6 @@ end
                 inival_reval = values_phase1(:,rev_s);%both value vectors initialized with last value estimate from learning phase
                 v_reval(1,:) = inival_reval;
                 
-                if isnan(r_reco)
 
                 if version == 1 || version == 2 || version == 4
                     if numel(params)  == 2
@@ -128,50 +109,13 @@ end
                 %choice
                 values_phase2 = v_reval(end,:);                
                 
-                %reconsolidation
-                elseif ~isnan(r_reco) 
-                    
-                    if numel(params)  == 3
-                           for t=1:numel(choices)
-                               v_reval(t+1,:) = v_reval(t,:) + alpha1*(r_rev(t,:) - v_reval(t,:));
-                           end
-                    elseif numel(params)  == 4
-                           for t=1:numel(choices)
-                               v_reval(t+1,:) = v_reval(t,:) + alpha2*(r_rev(t,:) - v_reval(t,:));
-                           end
-                    elseif numel(params)  == 5
-                           %value updating in revaluation phase, differentiated for
-                           %unchosen (alpha2) and chosen (alpha3) option
-                           for t=1:numel(choices)
-                               v_reval(t+1,r_rev(t,:)==-1) = v_reval(t,r_rev(t,:)==-1) + alpha2*(r_rev(t,r_rev(t,:)==-1) - v_reval(t,r_rev(t,:)==-1));
-                               v_reval(t+1,r_rev(t,:)==1) = v_reval(t,r_rev(t,:)==1) + alpha3*(r_rev(t,r_rev(t,:)==1) - v_reval(t,r_rev(t,:)==1));
-                           end
-                    end
-                    
-                %only take final values from revaluation phase to forced
-                %choice
-                values_phase2 = v_reval(end,:);
-                
-                % updating of associative strength in RS post
-                inival_reco = values_phase1;
-                inival_reco(rev_s) = values_phase2;
-                v_reco(1,:) = inival_reco;
-                
-                for rec=1:size(r_reco,1)
-                    v_reco(rec+1,:) = v_reco(rec,:) + alpha4*(r_reco(rec,:) - v_reco(rec,:));
-                end
-                
-                value_vector = v_reco(end,:);
-                end
 
                 %% forced choice phase
                 %%minimize negative log likelihood of the parameters (alpha1, alpha2 and tau) 
                 %%given the participant's choice data in forced choice phase
-                if isnan(r_reco)
-                   value_vector = values_phase1;
-                   value_vector(rev_s) = values_phase2;
-                end
-                
+                value_vector = values_phase1;
+                value_vector(rev_s) = values_phase2;
+  
                 value_vector = value_vector(choice_trials);
                 
                 % turn values into softmax choice probs
@@ -194,7 +138,6 @@ end
                     end
                 end
  
-if isnan(r_reco) 
     if numel(params) == 2              
         if alpha1 < 0 || alpha1 > 1 || tau <= 0 || tau > 100 
            energy = 9999999;
@@ -214,27 +157,7 @@ if isnan(r_reco)
            energy = -sum(log(subpch)); %calculate the negative log likelihood of choices
         end
     end
-else
-    if numel(params) == 3             
-        if alpha1 < 0 || alpha1 > 1 || alpha4 < 0 || alpha4 > 1 || tau <= 0 || tau > 100 
-           energy = 9999999;
-        else
-           energy = -sum(log(subpch)); %calculate the negative log likelihood of choices
-        end                
-    elseif numel(params) == 4               
-        if alpha1 < 0 || alpha1 > 1 || alpha2 < 0 || alpha2 > 1 || alpha4 < 0 || alpha4 > 1 || tau <= 0 || tau > 100 
-           energy = 9999999;
-        else
-           energy = -sum(log(subpch)); %calculate the negative log likelihood of choices
-        end         
-    elseif numel(params) == 5
-        if alpha1 < 0 || alpha1 > 1 || alpha2 < 0 || alpha2 > 1 || alpha3 < 0 || alpha3 > 1 || alpha4 < 0 || alpha4 > 1 || tau <= 0 || tau > 100 
-           energy = 9999999;
-        else
-           energy = -sum(log(subpch)); %calculate the negative log likelihood of choices
-        end
-        end
-end
+
     
 chprob = pch;
 
