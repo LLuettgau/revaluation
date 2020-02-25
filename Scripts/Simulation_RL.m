@@ -25,9 +25,9 @@ data_path = '...'; %set path to exp1, exp 2, exp3 or fmri here
 res_dir =   '...'; %specify folder to save structure with computational parameters
 
 if version < 4
-    params_dir= ['/Users/lennart/behavioral_data/params/candyman' num2str(version) filesep];
+    params_dir= ['.../params/candyman' num2str(version) filesep];
 else
-    params_dir= '/Users/lennart/behavioral_data/params/candyman_fmri/';
+    params_dir= '.../params/candyman_fmri/';
 end
     
 if version == 1
