@@ -8,7 +8,7 @@ plots = 1;
 
 exclude_outliers = 1; if exclude_outliers; choice_crit = .50; end %0 = all, 1 = no outliers, 2 = only outliers 
 
-addpath(genpath('/Users/lennart/Desktop/Toolboxes/')) %set path to Effect size toolbox (needs to be downloaded at: https://github.com/hhentschke/measures-of-effect-size-toolbox)
+addpath(genpath('...')) %set path to Effect size toolbox (needs to be downloaded at: https://github.com/hhentschke/measures-of-effect-size-toolbox)
 
 if sample == 1
    cd '...' %set path to exp5
