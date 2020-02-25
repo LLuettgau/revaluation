@@ -1,5 +1,6 @@
-%Analysis script for behavioral and brain-behavioral correlation data (Luettgau, Tempelmann, Kaiser &
-%Jocham)
+%Analysis script for behavioral, brain-behavioral correlation data 
+%and for running statistics on extracted representational similarity results 
+%(Luettgau, Tempelmann, Kaiser & Jocham)
 
 clc; clear all; close all;
 
@@ -7,7 +8,9 @@ sample = 4; %determine experiment to be investigated here: 1 = exp1, 2 = exp2, 3
 
 exclude_outliers = 1; if exclude_outliers; choice_crit = .50; end %0 = all, 1 = no outliers, 2 = only outliers 
 
-data_path = '...' %set path to exp1, exp 2, exp3 or fmri here
+data_path = '...'; %set path to exp1, exp 2, exp3 or fmri here
+
+addpath(genpath('...')) %set path to Effect size toolbox (needs to be downloaded at: https://github.com/hhentschke/measures-of-effect-size-toolbox)
 
 %set path to exp1, exp 2, exp3 or fmri
 if sample == 1
@@ -18,6 +21,7 @@ elseif sample == 3
    data_path = fullfile([data_path, 'exp3/']);
 elseif sample == 4
     data_path_fmri = fullfile([data_path, 'extracted_parameter_estimates/']);
+    data_path_rsa = fullfile([data_path, 'rsa_stats/']);
     data_path = fullfile([data_path, 'fmri/']);
 end
 
@@ -79,10 +83,28 @@ elseif sample == 4
 
     hippo_cached_value = [hippocampus_pre_2Avs2B_cachedvalue hippocampus_post_2Avs2B_cachedvalue];
     
+    l_hippocampus_post_2Avs2B_cachedvalue = load(fullfile([data_path_fmri,'Left_Hippocampus_seclvl_post_cachedvalue_2Avs2B_anatomical_meants.txt']));
+    l_hippocampus_pre_2Avs2B_cachedvalue = load(fullfile([data_path_fmri,'Left_Hippocampus_seclvl_pre_cachedvalue_2Avs2B_anatomical_meants.txt']));
+
     vta_post_2Avs2B_cachedvalue = load(fullfile([data_path_fmri,'Left_VTA_seclvl_post_cachedvalue_2Avs2B_functional_meants.txt']));
     vta_pre_2Avs2B_cachedvalue  = load(fullfile([data_path_fmri,'Left_VTA_seclvl_pre_cachedvalue_2Avs2B_functional_meants.txt']));
 
     vta_cached_value = [vta_pre_2Avs2B_cachedvalue vta_post_2Avs2B_cachedvalue];
+    
+    %Individual contrasts for weakening of CS0A and strengthening of CS+A, without contrasting with respective control stimuli CSB
+    %Hippocampus
+    hippocampus_post_2A = load(fullfile([data_path_fmri,'Left_Hippocampus_2A_post_meants.txt']));
+    hippocampus_pre_2A = load(fullfile([data_path_fmri,'Left_Hippocampus_2A_pre_meants.txt']));
+
+    hippocampus_post_3A = load(fullfile([data_path_fmri,'Left_Hippocampus_3A_post_meants.txt']));
+    hippocampus_pre_3A = load(fullfile([data_path_fmri,'Left_Hippocampus_3A_pre_meants.txt']));
+    
+    %OFC
+    right_ofc_pre_2A = load(fullfile([data_path_fmri,'Right_LOFC_2A_pre_meants.txt']));
+    right_ofc_post_2A = load(fullfile([data_path_fmri,'Right_LOFC_2A_post_meants.txt']));
+
+    right_ofc_pre_3A = load(fullfile([data_path_fmri,'Right_LOFC_3A_pre_meants.txt']));
+    right_ofc_post_3A = load(fullfile([data_path_fmri,'Right_LOFC_3A_post_meants.txt']));
     
 
     %rois from conjunction contrast thresholded at lenient Z > 2.8
@@ -108,7 +130,22 @@ elseif sample == 4
     
     accumbens_pre_3A_3B = load(fullfile([data_path_fmri,'Right_Accumbens_seclvl_pre_3Avs3B_meants.txt']));
     accumbens_post_3A_3B = load(fullfile([data_path_fmri,'Right_Accumbens_seclvl_post_3Avs3B_meants.txt']));
+
+    %correlation matrices for representational similarity analysis
+    %pre
+    rsa_mat_hippocampus_pre = load(fullfile([data_path_rsa,'pre_pearson_sim_mat_L_Hippocampus_ROI.mat']));
+    rsa_mat_ofc_pre = load(fullfile([data_path_rsa,'pre_pearson_sim_mat_R_OFC_ROI.mat']));
     
+    %post
+    rsa_mat_hippocampus_post =load(fullfile([data_path_rsa,'post_pearson_sim_mat_L_Hippocampus_ROI.mat']));
+    rsa_mat_ofc_post = load(fullfile([data_path_rsa,'post_pearson_sim_mat_R_OFC_ROI.mat']));
+    
+    %pre-post difference: averaged correlations and individual values
+    rsa_mat_hippocampus_diff = load(fullfile([data_path_rsa,'diff_pearson_sim_mat_L_Hippocampus_ROI.mat']));
+    rsa_all_hippocampus_diff = load(fullfile([data_path_rsa,'diff_pearson_all_corr_L_Hippocampus_ROI.mat']));
+
+    rsa_mat_ofc_diff = load(fullfile([data_path_rsa,'diff_pearson_sim_mat_R_OFC_ROI.mat']));
+    rsa_all_ofc_diff = load(fullfile([data_path_rsa,'diff_pearson_all_corr_R_OFC_ROI.mat']));
 
 end
 
@@ -260,8 +297,36 @@ for i = 1:length(data)
         results(i,k+1) = 1-results(i,k);
         count = count+1;
     end
+    
+    if sample == 1 || sample == 4
+       critical_pairs(i,1:6) = pairwise_comp(:,3)';
+       critical_pairs(i,7:12) = pairwise_comp(:,5)'; 
+       
+       critical_diff(i,1) = pairwise_comp(3,5);%CS0AvsCS+A
+       critical_diff(i,2) = pairwise_comp(4,6);%CS0BvsCS+B
 
+    elseif sample == 2
+       critical_pairs(i,1:6) = pairwise_comp(:,1)';
+       critical_pairs(i,7:12) = pairwise_comp(:,3)'; 
+       
+       critical_diff(i,1) = pairwise_comp(1,3);%CS-AvsCS0A
+       critical_diff(i,2) = pairwise_comp(2,4);%CS-BvsCS0B
+    elseif sample == 3
+       critical_pairs(i,1:6) = pairwise_comp(:,1)';
+       critical_pairs(i,7:12) = pairwise_comp(:,3)';  
+       critical_pairs(i,13:18) = pairwise_comp(:,5)'; 
+       
+       critical_diff(i,1) = pairwise_comp(1,3);%CS-AvsCS0A
+       critical_diff(i,2) = pairwise_comp(2,4);%CS-BvsCS0B
+       critical_diff(i,3) = pairwise_comp(3,5);%CS0AvsCS+A
+       critical_diff(i,4) = pairwise_comp(4,6);%CS0BvsCS+B
+    end
 
+    %read-out within-category choices
+    within_choices(i,1) = results(i,10);
+    within_choices(i,2) = results(i,28);
+    within_choices(i,3) = results(i,38);
+     
 %% Difference score pre- to post-exp rating of CS
 
 if sample == 4
@@ -496,6 +561,9 @@ if exclude_outliers == 1
     if results(i,2) < choice_crit
        results(i,2:end) = NaN;
        range_kanjis(i,:) = NaN;
+       critical_pairs(i,:) = NaN;
+       within_choices(i,:) = NaN;
+       critical_diff(i,:) = NaN;
     end
 elseif exclude_outliers == 2
     if results(i,2) > choice_crit
@@ -515,10 +583,15 @@ end
 %automated exclusion based on non-responses during Pavlovian learning phase cover task
 pos_rt = find(results(:,145) == 0);
 results = results(pos_rt,:);
-
+critical_pairs = critical_pairs(pos_rt,:);
+within_choices = within_choices(pos_rt,:);
+critical_diff = critical_diff(pos_rt,:);
 
 if exclude_outliers == 1
     results = results(~isnan(results(:,2)),:);
+    critical_pairs = critical_pairs(~isnan(critical_pairs(:,1)),:);
+    within_choices = within_choices(~isnan(within_choices(:,1)),:);
+    critical_diff = critical_diff(~isnan(critical_diff(:,1)),:);
 elseif exclude_outliers == 2
     results = results(~isnan(results(:,2)),:);   
 end
@@ -577,6 +650,14 @@ rm = fitrm(t,'S1-S6~1','WithinDesign',within);
 disp('rmANOVA on kanjis ratings')
 ranovatbl
 
+
+%calculate partial eta square 
+disp('overall choice probability rmANOVA effect size of ME stimulus pre')
+cp_data=data(:,1);
+data_rm = [data(:,1) data(:,2) data(:,3) data(:,4) data(:,5) data(:,6)];
+
+mes1way(data_rm,'partialeta2','isDep',1)
+
 %% overall choice probabilities for CS during choice probe phase
 %terminology is CS1A = CS-A, CS1B = CS-B, CS2A = CS0A, CS2B = CS0B, CS3A = CS+A, CS3B = CS+B
 
@@ -602,31 +683,129 @@ t = array2table(data,'VariableNames',varNames);
 factorNames = {'valence','stimulus'};
 within = table({'low'; 'low';'med';'med';'hi';'hi'},{'A';'B';'A';'B';'A';'B'},'VariableNames',factorNames);
 
-
 rm = fitrm(t,'S1A-S3B~1','WithinDesign',within); 
-
 
 [ranovatbl] = ranova(rm, 'WithinModel', 'valence*stimulus');
 
 disp('overall choice probability rmANOVA')
 ranovatbl
 
-% Wilcoxon signed-rank test on overall choice probabilities
-%CS1A = CS-A vs. CS1B = CS-B
+%calculate partial eta square 
+disp('overall choice probability rmANOVA effect size of ME valence')
+cp_data=data(:,1);
+stimulus = [repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1)];
+valence = [repmat(1,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(2,length(cp_data),1);repmat(3,length(cp_data),1);repmat(3,length(cp_data),1)];
+data_rm = [data(:,1); data(:,2); data(:,3); data(:,4); data(:,5); data(:,6)];
 
-disp('overall choice probability CS-A vs. CS-B')
-[P,H,STATS] = signrank(CS1A, CS1B)
-
-%CS2A = CS0A vs. CS2B = CS0B
-disp('overall choice probability CS0A vs. CS0B')
-[P,H,STATS] = signrank(CS2A, CS2B)
-
-
-%CS3A = CS+A vs. CS3B = CS+B
-disp('overall choice probability CS+A vs. CS+B')
-[P,H,STATS] = signrank(CS3A, CS3B)
+mes2way(data_rm,[valence stimulus],'partialeta2','isDep',[1 1])
 
 
+    % Wilcoxon signed-rank test on overall choice probabilities
+if sample == 1
+    %CS1A = CS-A vs. CS1B = CS-B
+    disp('overall choice probability CS-A vs. CS-B')    
+    [P,H,STATS] = signrank(CS1A, CS1B)
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS-A vs. CS-B effect size')
+    mes(CS1A,CS1B,'U3','isDep',1)
+    
+    %CS2A = CS0A vs. CS2B = CS0B
+    disp('overall choice probability CS0A vs. CS0B')
+    [P,H,STATS] = signrank(CS2A, CS2B, 'tail', 'left')
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS0A vs. CS0B effect size')
+    mes(CS2A,CS2B,'U3','isDep',1)
+    
+    
+    %CS3A = CS+A vs. CS3B = CS+B
+    disp('overall choice probability CS+A vs. CS+B')
+    [P,H,STATS] = signrank(CS3A, CS3B, 'tail', 'right')
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS+A vs. CS+B effect size')
+    mes(CS3B,CS3A,'U3','isDep',1)
+
+elseif sample == 2
+    %CS1A = CS-A vs. CS1B = CS-B
+    disp('overall choice probability CS-A vs. CS-B')    
+    [P,H,STATS] = signrank(CS1A, CS1B, 'tail', 'left')
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS-A vs. CS-B effect size')
+    mes(CS1A,CS1B,'U3','isDep',1)
+    
+    %CS2A = CS0A vs. CS2B = CS0B
+    disp('overall choice probability CS0A vs. CS0B')
+    [P,H,STATS] = signrank(CS2A, CS2B, 'tail', 'right')
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS0A vs. CS0B effect size')
+    mes(CS2B,CS2A,'U3','isDep',1)
+    
+    
+    %CS3A = CS+A vs. CS3B = CS+B
+    disp('overall choice probability CS+A vs. CS+B')
+    [P,H,STATS] = signrank(CS3A, CS3B)
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS+A vs. CS+B effect size')
+    mes(CS3B,CS3A,'U3','isDep',1)
+    
+elseif sample == 3
+    %CS1A = CS-A vs. CS1B = CS-B
+    disp('overall choice probability CS-A vs. CS-B')    
+    [P,H,STATS] = signrank(CS1A, CS1B, 'tail', 'left')
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS-A vs. CS-B effect size')
+    mes(CS1A,CS1B,'U3','isDep',1)
+    
+    %CS2A = CS0A vs. CS2B = CS0B
+    disp('overall choice probability CS0A vs. CS0B')
+    [P,H,STATS] = signrank(CS2A, CS2B)
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS0A vs. CS0B effect size')
+    mes(CS2B,CS2A,'U3','isDep',1)
+    
+    
+    %CS3A = CS+A vs. CS3B = CS+B
+    disp('overall choice probability CS+A vs. CS+B')
+    [P,H,STATS] = signrank(CS3A, CS3B, 'tail', 'right')
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS+A vs. CS+B effect size')
+    mes(CS3B,CS3A,'U3','isDep',1)
+    
+elseif sample == 4
+    %CS1A = CS-A vs. CS1B = CS-B
+    disp('overall choice probability CS-A vs. CS-B')    
+    [P,H,STATS] = signrank(CS1A, CS1B)
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS-A vs. CS-B effect size')
+    mes(CS1A,CS1B,'U3','isDep',1)
+    
+    %CS2A = CS0A vs. CS2B = CS0B
+    disp('overall choice probability CS0A vs. CS0B')
+    [P,H,STATS] = signrank(CS2A, CS2B, 'tail', 'left')
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS0A vs. CS0B effect size')
+    mes(CS2B,CS2A,'U3','isDep',1)
+    
+    
+    %CS3A = CS+A vs. CS3B = CS+B
+    disp('overall choice probability CS+A vs. CS+B')
+    [P,H,STATS] = signrank(CS3A, CS3B, 'tail', 'right')
+    
+    %calculate Cohen's U3
+    disp('overall choice probability CS+A vs. CS+B effect size')
+    mes(CS3B,CS3A,'U3','isDep',1)
+end
+    
 
 %% plot behavioral results
 %used for Figure 1E-H
@@ -654,12 +833,12 @@ if sample == 1
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
     hold all; 
     boxplot(res_to_plot, {reshape(repmat('A':'C',2,1),6,1) repmat((1:2)',3,1)},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.6,'FactorGap',20, 'Whisker',0); hold all; 
-    scatter(linspace(pos(1,1), pos(2,1),length(res_to_plot)), res_to_plot(:,1), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',2.5); hold all;
-    scatter(linspace(pos(1,2), pos(2,2), length(res_to_plot)), res_to_plot(:,2), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',2.5);
-    scatter(linspace(pos(1,3), pos(2,3), length(res_to_plot)), res_to_plot(:,3), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',2.5);
-    scatter(linspace(pos(1,4), pos(2,4), length(res_to_plot)), res_to_plot(:,4), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',2.5);
-    scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',2.5);
-    scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',2.5);
+    scatter(linspace(pos(1,1), pos(2,1),length(res_to_plot)), res_to_plot(:,1), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5); hold all;
+    scatter(linspace(pos(1,2), pos(2,2), length(res_to_plot)), res_to_plot(:,2), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(res_to_plot)), res_to_plot(:,3), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',0.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(res_to_plot)), res_to_plot(:,4), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
+    scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
     LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{A}', 'CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
     ylim([0 1.05]); 
     xlim([0 9]);
@@ -700,12 +879,12 @@ elseif sample == 2
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
     hold all; 
     boxplot(res_to_plot, {reshape(repmat('A':'C',2,1),6,1) repmat((1:2)',3,1)},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.6,'FactorGap',20, 'Whisker',0);
-    scatter(linspace(pos(1,1), pos(2,1),length(res_to_plot)), res_to_plot(:,1), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',2.5);
-    scatter(linspace(pos(1,2), pos(2,2), length(res_to_plot)), res_to_plot(:,2), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',2.5);
-    scatter(linspace(pos(1,3), pos(2,3), length(res_to_plot)), res_to_plot(:,3), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',2.5);
-    scatter(linspace(pos(1,4), pos(2,4), length(res_to_plot)), res_to_plot(:,4), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',2.5);
-    scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',2.5);
-    scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',2.5);
+    scatter(linspace(pos(1,1), pos(2,1),length(res_to_plot)), res_to_plot(:,1), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',0.5);
+    scatter(linspace(pos(1,2), pos(2,2), length(res_to_plot)), res_to_plot(:,2), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(res_to_plot)), res_to_plot(:,3), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(res_to_plot)), res_to_plot(:,4), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
     LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{A}', 'CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
     ylim([0 1.05]); 
     xlim([0 9]);
@@ -746,12 +925,12 @@ elseif sample == 3
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
     hold all; 
     boxplot(res_to_plot, {reshape(repmat('A':'C',2,1),6,1) repmat((1:2)',3,1)},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.6,'FactorGap',20, 'Whisker',0);
-    scatter(linspace(pos(1,1), pos(2,1),length(res_to_plot)), res_to_plot(:,1), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',2.5);
-    scatter(linspace(pos(1,2), pos(2,2), length(res_to_plot)), res_to_plot(:,2), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',2.5);
-    scatter(linspace(pos(1,3), pos(2,3), length(res_to_plot)), res_to_plot(:,3), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.b,'LineWidth',2.5);
-    scatter(linspace(pos(1,4), pos(2,4), length(res_to_plot)), res_to_plot(:,4), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',2.5);
-    scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',2.5);
-    scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',2.5);
+    scatter(linspace(pos(1,1), pos(2,1),length(res_to_plot)), res_to_plot(:,1), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',0.5);
+    scatter(linspace(pos(1,2), pos(2,2), length(res_to_plot)), res_to_plot(:,2), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(res_to_plot)), res_to_plot(:,3), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(res_to_plot)), res_to_plot(:,4), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
+    scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
     LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{A}', 'CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
     ylim([0 1.05]); 
     xlim([0 9]);
@@ -792,12 +971,12 @@ elseif sample == 4
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
     hold all; 
     boxplot(res_to_plot, {reshape(repmat('A':'C',2,1),6,1) repmat((1:2)',3,1)},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.6,'FactorGap',20, 'Whisker',0);
-    scatter(linspace(pos(1,1), pos(2,1),length(res_to_plot)), res_to_plot(:,1), 150, 'o', 'MarkerFaceColor', cols.dgrey, 'MarkerEdgeColor', cols.dgrey,'LineWidth',2.5); 
-    scatter(linspace(pos(1,2), pos(2,2), length(res_to_plot)), res_to_plot(:,2), 150, 'o', 'MarkerFaceColor', cols.dgrey, 'MarkerEdgeColor', cols.dgrey,'LineWidth',2.5);
-    scatter(linspace(pos(1,3), pos(2,3), length(res_to_plot)), res_to_plot(:,3), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',2.5);
-    scatter(linspace(pos(1,4), pos(2,4), length(res_to_plot)), res_to_plot(:,4), 150, 'o', 'MarkerFaceColor', cols.dgrey, 'MarkerEdgeColor', cols.dgrey,'LineWidth',2.5);
-    scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',2.5);
-    scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.dgrey, 'MarkerEdgeColor', cols.dgrey,'LineWidth',2.5);
+    scatter(linspace(pos(1,1), pos(2,1),length(res_to_plot)), res_to_plot(:,1), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(res_to_plot)), res_to_plot(:,2), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(res_to_plot)), res_to_plot(:,3), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',0.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(res_to_plot)), res_to_plot(:,4), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
+    scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
     LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{A}', 'CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
     ylim([0 1.05]); 
     xlim([0 9]);
@@ -833,10 +1012,18 @@ elseif sample == 4
 
 end
 
+%% Tests on extracted fMRI parameter estimates
 if sample == 4
-    %Tests on extracted fMRI parameter estimates
-    
+
     % Hippocampus
+    
+    %Overall effect
+    %pre
+    [P,H,STATS] = signrank(hipp_to_plot(:,1), hipp_to_plot(:,2), 'tail', 'left')
+    %calculate Cohen's U3
+    mes(hipp_to_plot(:,2), hipp_to_plot(:,1),'U3','isDep',1)
+
+    
     hipp_asso_strength = [hippocampus_pre_1Avs1B hippocampus_post_1Avs1B hippocampus_pre_2Avs2B hippocampus_post_2Avs2B -1*(hippocampus_pre_3Avs3B) -1*(hippocampus_post_3Avs3B)];
     %recode so that positive value is always stronger association and negative
     %value is weaker association
@@ -855,20 +1042,62 @@ if sample == 4
 
 
     [ranovatbl] = ranova(rm, 'WithinModel', 'valence*time');
+    ranovatbl
+    
+    %calculate partial eta square 
+    disp('overall choice probability rmANOVA effect size of ME valence')
+    cp_data=data(:,1);
+    time = [repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1)];
+    valence = [repmat(2,length(cp_data),1);repmat(2,length(cp_data),1);repmat(3,length(cp_data),1);repmat(3,length(cp_data),1)];
+    data_rm = [data(:,1); data(:,2); data(:,3); data(:,4)];
 
+    mes2way(data_rm,[valence time],'partialeta2','isDep',[1 1])
+
+    
+    %CS-A pre
     [P,H,STATS] = signrank(hipp_asso_strength(:,1), 0)
+    mes(hipp_asso_strength(:,1),0,'U3_1')
+    
+    %CS-A post
     [P,H,STATS] = signrank(hipp_asso_strength(:,2), 0)
+    mes(hipp_asso_strength(:,2),0,'U3_1')
+    
+    %CS0A pre
     [P,H,STATS] = signrank(hipp_asso_strength(:,3), 0)
-    [P,H,STATS] = signrank(hipp_asso_strength(:,4), 0)
+    mes(hipp_asso_strength(:,3),0,'U3_1')
+    
+    %CS0A post
+    [P,H,STATS] = signrank(hipp_asso_strength(:,4), 0, 'tail', 'left')
+    mes(hipp_asso_strength(:,4),0,'U3_1')
+    
+    %CS+A pre
     [P,H,STATS] = signrank(hipp_asso_strength(:,5), 0)
-    [P,H,STATS] = signrank(hipp_asso_strength(:,6), 0)
+    mes(hipp_asso_strength(:,5),0,'U3_1')
+    
+    %CS+A post
+    [P,H,STATS] = signrank(hipp_asso_strength(:,6), 0, 'tail', 'right')
+    mes(hipp_asso_strength(:,6),0,'U3_1')
+
     
     [P,H,STATS] = signrank(hipp_asso_strength(:,1), hipp_asso_strength(:,2))
-    [P,H,STATS] = signrank(hipp_asso_strength(:,3), hipp_asso_strength(:,4))
-    [P,H,STATS] = signrank(hipp_asso_strength(:,5), hipp_asso_strength(:,6))
     
-    %OFC
+    [P,H,STATS] = signrank(hipp_asso_strength(:,3), hipp_asso_strength(:,4), 'tail', 'right')
+    %calculate Cohen's U3
+    mes(hipp_asso_strength(:,4), hipp_asso_strength(:,3),'U3','isDep',1)
+    
+    [P,H,STATS] = signrank(hipp_asso_strength(:,5), hipp_asso_strength(:,6), 'tail', 'left')
+    %calculate Cohen's U3
+    mes(hipp_asso_strength(:,5), hipp_asso_strength(:,6),'U3','isDep',1)
+    
+    %% OFC
 
+    %Overall effect
+    %pre
+    [P,H,STATS] = signrank(ofc_to_plot(:,1), ofc_to_plot(:,2), 'tail', 'left')
+    %calculate Cohen's U3
+    mes(ofc_to_plot(:,2), ofc_to_plot(:,1),'U3','isDep',1)
+    
+    
     % repeated measures ANOVA
     data = ofc_asso_strength(:,3:end);
     varNames = {'S2A2Bpre', 'S2A2Bpost', 'S3A3Bpre', 'S3A3Bpost'};
@@ -883,20 +1112,51 @@ if sample == 4
 
 
     [ranovatbl] = ranova(rm, 'WithinModel', 'valence*time');
-
-
-    [P,H,STATS] = signrank(ofc_asso_strength(:,1), 0)
-    [P,H,STATS] = signrank(ofc_asso_strength(:,2), 0)
-    [P,H,STATS] = signrank(ofc_asso_strength(:,3), 0)
-    [P,H,STATS] = signrank(ofc_asso_strength(:,4), 0)
-    [P,H,STATS] = signrank(ofc_asso_strength(:,5), 0)
-    [P,H,STATS] = signrank(ofc_asso_strength(:,6), 0)
-
-    [P,H,STATS] = signrank(ofc_asso_strength(:,1), ofc_asso_strength(:,2))
-    [P,H,STATS] = signrank(ofc_asso_strength(:,3), ofc_asso_strength(:,4))
-    [P,H,STATS] = signrank(ofc_asso_strength(:,5), ofc_asso_strength(:,6))
-
+    ranovatbl
     
+    %calculate partial eta square 
+    cp_data=data(:,1);
+    time = [repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1)];
+    valence = [repmat(2,length(cp_data),1);repmat(2,length(cp_data),1);repmat(3,length(cp_data),1);repmat(3,length(cp_data),1)];
+    data_rm = [data(:,1); data(:,2); data(:,3); data(:,4)];
+
+    mes2way(data_rm,[valence time],'partialeta2','isDep',[1 1])
+
+    %CS-A pre
+    [P,H,STATS] = signrank(ofc_asso_strength(:,1), 0)
+    mes(ofc_asso_strength(:,1),0,'U3_1')
+    
+    %CS-A post
+    [P,H,STATS] = signrank(ofc_asso_strength(:,2), 0)
+    mes(ofc_asso_strength(:,2),0,'U3_1')
+    
+    %CS0A pre
+    [P,H,STATS] = signrank(ofc_asso_strength(:,3), 0)
+    mes(ofc_asso_strength(:,3),0,'U3_1')
+    
+    %CS0A post
+    [P,H,STATS] = signrank(ofc_asso_strength(:,4), 0, 'tail', 'left')
+    mes(ofc_asso_strength(:,4),0,'U3_1')
+    
+    %CS+A pre
+    [P,H,STATS] = signrank(ofc_asso_strength(:,5), 0)
+    mes(ofc_asso_strength(:,5),0,'U3_1')
+    
+    %CS+A post
+    [P,H,STATS] = signrank(ofc_asso_strength(:,6), 0, 'tail', 'right')
+    mes(ofc_asso_strength(:,6),0,'U3_1')
+    
+    
+    [P,H,STATS] = signrank(ofc_asso_strength(:,1), ofc_asso_strength(:,2))
+    
+    [P,H,STATS] = signrank(ofc_asso_strength(:,3), ofc_asso_strength(:,4), 'tail', 'right')
+    %calculate Cohen's U3
+    mes(ofc_asso_strength(:,4), ofc_asso_strength(:,3),'U3','isDep',1)
+    
+    [P,H,STATS] = signrank(ofc_asso_strength(:,5), ofc_asso_strength(:,6), 'tail', 'left')
+    %calculate Cohen's U3
+    mes(ofc_asso_strength(:,5), ofc_asso_strength(:,6),'U3','isDep',1)
+
     %% used this plot for illustration in paper - Figure 2D&E
     
     cols.k = [0 0 0];
@@ -1087,7 +1347,7 @@ if sample == 4
     %behavior
 
 
-    [rho,p] = corr(diff_3A_3B,inv_hippocampus_post_3Avs3B, 'type', 'Spearman')
+    [rho,p] = corr(diff_3A_3B,inv_hippocampus_post_3Avs3B, 'type', 'Spearman', 'tail', 'right')
 
 
     cols.k = [0 0 0];
@@ -1114,17 +1374,20 @@ if sample == 4
     set(gca,'ycolor',cols.k)
     set(gca,'xcolor',cols.k)
     set(gcf,'color','w');
+    
+    %correlation of CS0A parameter estimates and CS0A choice bias
+    %post
+    [rho,p] = corr(diff_2A_2B,hippocampus_post_2Avs2B, 'type', 'Spearman')
+    [rho,p] = corr(res_to_plot(:,3),hippocampus_post_2Avs2B, 'type', 'Spearman')
 
-
-
-    %% use this plot for illustration in paper - Figure S2A
+    %% use this plot for illustration in paper - Figure S4A
     %calculation of within-category choice prob. differences
-    results_pairs = results_kanjis_to_plot(:,[1,10,15]);
+    results_pairs = within_choices;
 
     %hippocampus cluster asso strength from post seclvl 3Avs3B - correlation with choice
     %behavior
 
-    [rho,p] = corr(results_pairs(:,3),inv_hippocampus_post_3Avs3B, 'type', 'Spearman') 
+    [rho,p] = corr(results_pairs(:,3),inv_hippocampus_post_3Avs3B, 'type', 'Spearman', 'tail', 'right') 
 
     cols.k = [0 0 0];
     cols.b = [0 .058 .686];
@@ -1162,35 +1425,69 @@ if sample == 4
     [rho,p] = corr(diff_3A_3B,lofc_post_3A_3B, 'type', 'Spearman')
     [rho,p] = corr(results_pairs(:,3),lofc_post_3A_3B, 'type', 'Spearman')
 
-    %NAcc
+    %% NAcc
     nacc_asso_strength = [accumbens_pre_1A_1B accumbens_post_1A_1B accumbens_pre_2A_2B accumbens_post_2A_2B -1*(accumbens_pre_3A_3B) -1*(accumbens_post_3A_3B)];
     
     % repeated measures ANOVA
-    data = nacc_asso_strength;
-    varNames = {'S1A1Bpre', 'S1A1Bpost','S2A2Bpre', 'S2A2Bpost', 'S3A3Bpre', 'S3A3Bpost'};
+    data = nacc_asso_strength(:,3:end);
+    varNames = {'S2A2Bpre', 'S2A2Bpost', 'S3A3Bpre', 'S3A3Bpost'};
 
     t = array2table(data,'VariableNames',varNames);
 
     factorNames = {'valence','time'};
-    within = table({'low';'low';'med';'med';'hi';'hi'},{'pre';'post';'pre';'post';'pre';'post'},'VariableNames',factorNames);
+    within = table({'med';'med';'hi';'hi'},{'pre';'post';'pre';'post'},'VariableNames',factorNames);
 
 
-    rm = fitrm(t,'S1A1Bpre-S3A3Bpost~1','WithinDesign',within); 
+    rm = fitrm(t,'S2A2Bpre-S3A3Bpost~1','WithinDesign',within); 
 
 
     [ranovatbl] = ranova(rm, 'WithinModel', 'valence*time');
+    ranovatbl
     
-    [P,H,STATS] = signrank(nacc_asso_strength(:,1), 0)
-    [P,H,STATS] = signrank(nacc_asso_strength(:,2), 0)
-    [P,H,STATS] = signrank(nacc_asso_strength(:,3), 0)
-    [P,H,STATS] = signrank(nacc_asso_strength(:,4), 0)
-    [P,H,STATS] = signrank(nacc_asso_strength(:,5), 0)
-    [P,H,STATS] = signrank(nacc_asso_strength(:,6), 0)
+    %calculate partial eta square 
+    cp_data=data(:,1);
+    time = [repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1)];
+    valence = [repmat(2,length(cp_data),1);repmat(2,length(cp_data),1);repmat(3,length(cp_data),1);repmat(3,length(cp_data),1)];
+    data_rm = [data(:,1); data(:,2); data(:,3); data(:,4)];
 
-    [P,H,STATS] = signrank(nacc_asso_strength(:,1), nacc_asso_strength(:,2))
-    [P,H,STATS] = signrank(nacc_asso_strength(:,3), nacc_asso_strength(:,4))
-    [P,H,STATS] = signrank(nacc_asso_strength(:,5), nacc_asso_strength(:,6))
+    mes2way(data_rm,[valence time],'partialeta2','isDep',[1 1])
+
+    %CS-A pre
+    [P,H,STATS] = signrank(nacc_asso_strength(:,1), 0)
+    mes(nacc_asso_strength(:,1),0,'U3_1')
     
+    %CS-A post
+    [P,H,STATS] = signrank(nacc_asso_strength(:,2), 0)
+    mes(nacc_asso_strength(:,2),0,'U3_1')
+    
+    %CS0A pre
+    [P,H,STATS] = signrank(nacc_asso_strength(:,3), 0)
+    mes(nacc_asso_strength(:,3),0,'U3_1')
+    
+    %CS0A post
+    [P,H,STATS] = signrank(nacc_asso_strength(:,4), 0, 'tail', 'left')
+    mes(nacc_asso_strength(:,4),0,'U3_1')
+    
+    %CS+A pre
+    [P,H,STATS] = signrank(nacc_asso_strength(:,5), 0)
+    mes(nacc_asso_strength(:,5),0,'U3_1')
+    
+    %CS+A post
+    [P,H,STATS] = signrank(nacc_asso_strength(:,6), 0, 'tail', 'right')
+    mes(nacc_asso_strength(:,6),0,'U3_1')
+    
+    
+    [P,H,STATS] = signrank(nacc_asso_strength(:,1), nacc_asso_strength(:,2))
+    
+    [P,H,STATS] = signrank(nacc_asso_strength(:,3), nacc_asso_strength(:,4), 'tail', 'right')
+    %calculate Cohen's U3
+    mes(nacc_asso_strength(:,4), nacc_asso_strength(:,3),'U3','isDep',1)
+    
+    [P,H,STATS] = signrank(nacc_asso_strength(:,5), nacc_asso_strength(:,6), 'tail', 'left')
+    %calculate Cohen's U3
+    mes(nacc_asso_strength(:,5), nacc_asso_strength(:,6),'U3','isDep',1)
+
+
     %2A-2B - right Accumbens
     [rho,p] = corr(results_pairs(:,2),accumbens_post_2A_2B, 'type', 'Spearman')
     [rho,p] = corr(diff_2A_2B,accumbens_post_2A_2B, 'type', 'Spearman')
@@ -1199,33 +1496,68 @@ if sample == 4
     [rho,p] = corr(diff_3A_3B,accumbens_post_3A_3B, 'type', 'Spearman')
     [rho,p] = corr(results_pairs(:,3),accumbens_post_3A_3B, 'type', 'Spearman')
     
+    %% VTA
+    vta_asso_strength = [vta_pre_1A_1B vta_post_1A_1B vta_pre_2A_2B vta_post_2A_2B -1*(vta_pre_3A_3B) -1*(vta_post_3A_3B)];
 
     % repeated measures ANOVA
-    vta_asso_strength = [vta_pre_1A_1B vta_post_1A_1B vta_pre_2A_2B vta_post_2A_2B -1*(vta_pre_3A_3B) -1*(vta_post_3A_3B)];
-    
-    data = vta_asso_strength;
-    varNames = {'S1A1Bpre', 'S1A1Bpost','S2A2Bpre', 'S2A2Bpost', 'S3A3Bpre', 'S3A3Bpost'};
+    data = vta_asso_strength(:,3:end);
+    varNames = {'S2A2Bpre', 'S2A2Bpost', 'S3A3Bpre', 'S3A3Bpost'};
 
     t = array2table(data,'VariableNames',varNames);
 
     factorNames = {'valence','time'};
-    within = table({'low';'low';'med';'med';'hi';'hi'},{'pre';'post';'pre';'post';'pre';'post'},'VariableNames',factorNames);
+    within = table({'med';'med';'hi';'hi'},{'pre';'post';'pre';'post'},'VariableNames',factorNames);
 
 
-    rm = fitrm(t,'S1A1Bpre-S3A3Bpost~1','WithinDesign',within); 
+    rm = fitrm(t,'S2A2Bpre-S3A3Bpost~1','WithinDesign',within); 
+
 
     [ranovatbl] = ranova(rm, 'WithinModel', 'valence*time');
+    ranovatbl
+    
+    %calculate partial eta square 
+    cp_data=data(:,1);
+    time = [repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1)];
+    valence = [repmat(2,length(cp_data),1);repmat(2,length(cp_data),1);repmat(3,length(cp_data),1);repmat(3,length(cp_data),1)];
+    data_rm = [data(:,1); data(:,2); data(:,3); data(:,4)];
 
+    mes2way(data_rm,[valence time],'partialeta2','isDep',[1 1])
+
+    %CS-A pre
     [P,H,STATS] = signrank(vta_asso_strength(:,1), 0)
+    mes(vta_asso_strength(:,1),0,'U3_1')
+    
+    %CS-A post
     [P,H,STATS] = signrank(vta_asso_strength(:,2), 0)
+    mes(vta_asso_strength(:,2),0,'U3_1')
+    
+    %CS0A pre
     [P,H,STATS] = signrank(vta_asso_strength(:,3), 0)
-    [P,H,STATS] = signrank(vta_asso_strength(:,4), 0)
+    mes(vta_asso_strength(:,3),0,'U3_1')
+    
+    %CS0A post
+    [P,H,STATS] = signrank(vta_asso_strength(:,4), 0, 'tail', 'left')
+    mes(vta_asso_strength(:,4),0,'U3_1')
+    
+    %CS+A pre
     [P,H,STATS] = signrank(vta_asso_strength(:,5), 0)
-    [P,H,STATS] = signrank(vta_asso_strength(:,6), 0)
-
+    mes(vta_asso_strength(:,5),0,'U3_1')
+    
+    %CS+A post
+    [P,H,STATS] = signrank(vta_asso_strength(:,6), 0, 'tail', 'right')
+    mes(vta_asso_strength(:,6),0,'U3_1')
+    
+    
     [P,H,STATS] = signrank(vta_asso_strength(:,1), vta_asso_strength(:,2))
-    [P,H,STATS] = signrank(vta_asso_strength(:,3), vta_asso_strength(:,4))
-    [P,H,STATS] = signrank(vta_asso_strength(:,5), vta_asso_strength(:,6))
+    
+    [P,H,STATS] = signrank(vta_asso_strength(:,3), vta_asso_strength(:,4), 'tail', 'right')
+    %calculate Cohen's U3
+    mes(vta_asso_strength(:,4), vta_asso_strength(:,3),'U3','isDep',1)
+    
+    [P,H,STATS] = signrank(vta_asso_strength(:,5), vta_asso_strength(:,6), 'tail', 'left')
+    %calculate Cohen's U3
+    mes(vta_asso_strength(:,5), vta_asso_strength(:,6),'U3','isDep',1)
+    
 
     %2A-2B - left VTA
     [rho,p] = corr(results_pairs(:,2),vta_post_2A_2B, 'type', 'Spearman')
@@ -1242,7 +1574,9 @@ if sample == 4
     [P,H,STATS] = signrank(hippo_cached_value(:,1), 0)
     [P,H,STATS] = signrank(hippo_cached_value(:,2), 0)
 
-    [P,H,STATS] = signrank(hippo_cached_value(:,1), hippo_cached_value(:,2))
+    [P,H,STATS] = signrank(hippo_cached_value(:,1), hippo_cached_value(:,2), 'tail', 'right')
+    %calculate Cohen's U3
+    mes(hippo_cached_value(:,1), hippo_cached_value(:,2),'U3','isDep',1)
         
     %correlation of cached-value effect (R Hippocampus) and associative effect (L Hippocampus)
     %post - 2A-2B
@@ -1255,6 +1589,14 @@ if sample == 4
     [rho,p] = corr(hippocampus_pre_2Avs2B,hippocampus_pre_2Avs2B_cachedvalue, 'type', 'Spearman')
     
     
+    %correlation of cached-value parameter estimates (L Hippocampus) and associative parameter estimates (L Hippocampus)
+    %post - conjunction
+    [rho,p] = corr(hippocampus_post_2Avs2B,l_hippocampus_post_2Avs2B_cachedvalue, 'type', 'Spearman')
+
+    %pre
+    [rho,p] = corr(hippocampus_pre_2Avs2B,l_hippocampus_pre_2Avs2B_cachedvalue, 'type', 'Spearman')
+    
+
     %hippocampus
     %post
     [rho,p] = corr(results_pairs(:,2),hippo_cached_value(:,2), 'type', 'Spearman')
@@ -1287,7 +1629,1171 @@ if sample == 4
     [rho,p] = corr(diff_2A_2B,diff_vta_cached_value, 'type', 'Spearman')
     
     
+    %% Individual contrasts for weakening of CS0A and strengthening of CS+A
+    
+    %Hippocampus     
+    hipp_individual_asso = [hippocampus_pre_2A hippocampus_post_2A -1*(hippocampus_pre_3A) -1*(hippocampus_post_3A)];
+    %recode CS+A so that positive value is always stronger association and negative
+    %value is weaker association
+    
+    % repeated measures ANOVA
+    data = hipp_individual_asso;
+    varNames = {'S2Apre', 'S2Apost', 'S3Apre', 'S3Apost'};
+
+    t = array2table(data,'VariableNames',varNames);
+
+    factorNames = {'valence','time'};
+    within = table({'med';'med';'hi';'hi'},{'pre';'post';'pre';'post'},'VariableNames',factorNames);
+
+
+    rm = fitrm(t,'S2Apre-S3Apost~1','WithinDesign',within); 
+
+
+    [ranovatbl] = ranova(rm, 'WithinModel', 'valence*time');
+    ranovatbl
+    
+    %calculate partial eta square 
+    disp('overall choice probability rmANOVA effect size of ME valence')
+    cp_data=data(:,1);
+    time = [repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1)];
+    valence = [repmat(2,length(cp_data),1);repmat(2,length(cp_data),1);repmat(3,length(cp_data),1);repmat(3,length(cp_data),1)];
+    data_rm = [data(:,1); data(:,2); data(:,3); data(:,4)];
+
+    mes2way(data_rm,[valence time],'partialeta2','isDep',[1 1])
+
+    
+    %CS0A pre
+    [P,H,STATS] = signrank(hipp_individual_asso(:,1), 0)
+    mes(hipp_individual_asso(:,1),0,'U3_1')
+    
+    %CS0A post
+    [P,H,STATS] = signrank(hipp_individual_asso(:,2), 0)
+    mes(hipp_individual_asso(:,2),0,'U3_1')
+    
+    %CS+A pre
+    [P,H,STATS] = signrank(hipp_individual_asso(:,3), 0)
+    mes(hipp_individual_asso(:,3),0,'U3_1')
+    
+    %CS+A post
+    [P,H,STATS] = signrank(hipp_individual_asso(:,4), 0)
+    mes(hipp_individual_asso(:,4),0,'U3_1')
     
     
+    [P,H,STATS] = signrank(hipp_individual_asso(:,1), hipp_individual_asso(:,2))
+    
+    [P,H,STATS] = signrank(hipp_individual_asso(:,3), hipp_individual_asso(:,4))
+    %calculate Cohen's U3
+    mes(hipp_individual_asso(:,4), hipp_individual_asso(:,3),'U3','isDep',1)
+
+    % plot
+    
+    cols.k = [0 0 0];
+    cols.b = [0 .058 .686];
+    cols.y = [1  .828 0];
+    cols.grey = [0.7843 0.7843 0.7843];
+    cols.dgrey = [0.1922 0.2000 0.2078];
+
+
+    positions = [1 2 4 5];   
+    pos = [positions-1; ...
+           positions+1];
+
+    mean_hipp_asso_strength = [mean(hippocampus_pre_2A);
+                               mean(hippocampus_post_2A);
+                               NaN;
+                               mean(-1*(hippocampus_pre_3A));
+                               mean(-1*(hippocampus_post_3A))];
+    size_vec = [1 2 4 5];
+    color_vec = [cols.k; cols.k; cols.k; cols.y; cols.y; cols.k; cols.b; cols.b];
+
+    a = figure();  
+    bar(1:5,mean_hipp_asso_strength, 'k', 'BarWidth', 0.6); hold all;
+    errorbar(size_vec,mean_hipp_asso_strength(size_vec,:), std(hipp_individual_asso)./sqrt(size(hipp_individual_asso,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
+    LabelsCS ={'PRE', 'POST','PRE', 'POST'};
+    ylim([-45 30]); 
+    xlim([0 6]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):15:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',size_vec)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new,'FontSize',30,'FontName', 'Arial');
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',30,'FontName', 'Arial');
+
+
+    
+    %OFC   
+    ofc_individual_asso = [right_ofc_pre_2A right_ofc_post_2A -1*(right_ofc_pre_3A) -1*(right_ofc_post_3A)];
+    %recode CS+A so that positive value is always stronger association and negative
+    %value is weaker association
+    
+    % repeated measures ANOVA
+    data = ofc_individual_asso;
+    varNames = {'S2Apre', 'S2Apost', 'S3Apre', 'S3Apost'};
+
+    t = array2table(data,'VariableNames',varNames);
+
+    factorNames = {'valence','time'};
+    within = table({'med';'med';'hi';'hi'},{'pre';'post';'pre';'post'},'VariableNames',factorNames);
+
+
+    rm = fitrm(t,'S2Apre-S3Apost~1','WithinDesign',within); 
+
+
+    [ranovatbl] = ranova(rm, 'WithinModel', 'valence*time');
+    ranovatbl
+    
+    %calculate partial eta square 
+    disp('overall choice probability rmANOVA effect size of ME valence')
+    cp_data=data(:,1);
+    time = [repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1)];
+    valence = [repmat(2,length(cp_data),1);repmat(2,length(cp_data),1);repmat(3,length(cp_data),1);repmat(3,length(cp_data),1)];
+    data_rm = [data(:,1); data(:,2); data(:,3); data(:,4)];
+
+    mes2way(data_rm,[valence time],'partialeta2','isDep',[1 1])
+
+    
+    %CS0A pre
+    [P,H,STATS] = signrank(ofc_individual_asso(:,1), 0)
+    mes(ofc_individual_asso(:,1),0,'U3_1')
+    
+    %CS0A post
+    [P,H,STATS] = signrank(ofc_individual_asso(:,2), 0)
+    mes(ofc_individual_asso(:,2),0,'U3_1')
+    
+    %CS+A pre
+    [P,H,STATS] = signrank(ofc_individual_asso(:,3), 0)
+    mes(ofc_individual_asso(:,3),0,'U3_1')
+    
+    %CS+A post
+    [P,H,STATS] = signrank(ofc_individual_asso(:,4), 0)
+    mes(ofc_individual_asso(:,4),0,'U3_1')
+    
+    
+    [P,H,STATS] = signrank(ofc_individual_asso(:,1), ofc_individual_asso(:,2))
+    
+    [P,H,STATS] = signrank(ofc_individual_asso(:,3), ofc_individual_asso(:,4))
+    %calculate Cohen's U3
+    mes(ofc_individual_asso(:,4), ofc_individual_asso(:,3),'U3','isDep',1)
+
+    
+    % plot 
+    cols.k = [0 0 0];
+    cols.b = [0 .058 .686];
+    cols.y = [1  .828 0];
+    cols.grey = [0.7843 0.7843 0.7843];
+    cols.dgrey = [0.1922 0.2000 0.2078];
+
+
+    positions = [1 2 4 5];   
+    pos = [positions-1; ...
+           positions+1];
+
+    mean_ofc_asso_strength = [mean(right_ofc_pre_2A);
+                               mean(right_ofc_post_2A);
+                               NaN;
+                               mean(-1*(right_ofc_pre_3A));
+                               mean(-1*(right_ofc_post_3A))];
+    size_vec = [1 2 4 5];
+    color_vec = [cols.k; cols.k; cols.k; cols.y; cols.y; cols.k; cols.b; cols.b];
+
+    a = figure();  
+    bar(1:5,mean_ofc_asso_strength, 'k', 'BarWidth', 0.6); hold all;
+    errorbar(size_vec,mean_ofc_asso_strength(size_vec,:), std(ofc_individual_asso)./sqrt(size(ofc_individual_asso,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
+    LabelsCS ={'PRE', 'POST','PRE', 'POST'};
+    ylim([-45 30]); 
+    xlim([0 6]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):15:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',size_vec)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new,'FontSize',30,'FontName', 'Arial');
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',30,'FontName', 'Arial');
+
+
+    
+    %% Representational Similarity Analysis
+    
+    %pool similarity across all stimuli - 
+    %CS-A/B --> 3,1 and 4,2 == 2nd and 13th row
+    %CS0A/B --> 7,5 and 8,6 == 40th and 47th row
+    %CS+A/B --> 11,9 and 12,10 == 62nd and 65th row
+    
+    %% Left Hippocampus
+    diff_to_plot = [rsa_all_hippocampus_diff.all_diff(2,:); rsa_all_hippocampus_diff.all_diff(13,:); ...
+                    rsa_all_hippocampus_diff.all_diff(40,:); rsa_all_hippocampus_diff.all_diff(47,:); 
+                    rsa_all_hippocampus_diff.all_diff(62,:); rsa_all_hippocampus_diff.all_diff(65,:)];
+    
+    %pool across CS0A/B and CS+A/B repetition similarity changes pre-post
+    pool_effect = mean(diff_to_plot(3:end,:));
+    [h, p, ci, stats] = ttest(pool_effect,0, 'tail','left')
+    [p,h,STATS] = signrank(pool_effect,0, 'tail','left')
+    mean(pool_effect)
+    std(pool_effect)
+    %calculate effect size
+    mes(pool_effect,0,'U3_1')
+
+    %pool across CS-A/B repetition similarity changes pre-post
+    pool_control = mean(diff_to_plot(1:2,:));
+    [h, p, ci, stats] = ttest(pool_control,0)
+    [p,h,STATS] = signrank(pool_control,0)
+    mean(pool_control)
+    std(pool_control)
+    %calculate effect size
+    mes(pool_control,0,'U3_1')
+    
+    
+    %compare pooled CS0A/B and CS+A/B (effect) and pooled CS-A/B (control)
+    %changes in similarity
+    [h, p, ci, stats] = ttest(pool_effect,pool_control, 'tail','left')
+    [p,h,STATS] = signrank(pool_effect,pool_control, 'tail','left')
+
+    %calculate Cohen's U3
+    mes(pool_effect, pool_control,'U3','isDep',1)    
+    
+    
+    %test each pooled effect vs. 0 
+    %CS-A/B (control)
+    pool_csminus = mean(diff_to_plot(1:2,:));
+    [h, p, ci, stats] = ttest(pool_csminus,0)
+    [p,h,STATS] = signrank(pool_csminus,0, 'tail','right')
+    mean(pool_csminus)
+    std(pool_csminus)
+    
+    %calculate effect size
+    mes(pool_csminus,0,'U3_1')
+    
+    %CS0A/B
+    pool_csnull = mean(diff_to_plot(3:4,:));
+    [h, p, ci, stats] = ttest(pool_csnull,0, 'tail','left')
+    [p,h,STATS] = signrank(pool_csnull,0, 'tail','left')
+    mean(pool_csnull)
+    std(pool_csnull)
+    
+    %calculate effect size
+    mes(pool_csnull,0,'U3_1')
+    
+    %CS+A/B 
+    pool_csplus = mean(diff_to_plot(5:6,:));
+    [h, p, ci, stats] = ttest(pool_csplus,0, 'tail','left')
+    [p,h,STATS] = signrank(pool_csplus,0, 'tail','left')
+    mean(pool_csplus)
+    std(pool_csplus) 
+    
+    %calculate effect size
+    mes(pool_csplus,0,'U3_1')
+    
+    
+    %Plot
+    rsa_to_plot = [pool_csminus' pool_csnull' pool_csplus' pool_effect'];
+    
+    positions = [1 2 3 4];   
+    pos = [positions-.2; ...
+           positions+.2];
+
+    mean_hippo_rsa = [mean(pool_csminus) mean(pool_csnull) mean(pool_csplus) mean(pool_effect)];
+                     
+    color_vec = [cols.k; cols.k; cols.k; cols.k];
+
+    figure;  
+    bar(1:4,mean_hippo_rsa, 'k', 'BarWidth', 0.6); hold all;
+    errorbar(1:4,mean_hippo_rsa, std(rsa_to_plot)./sqrt(size(rsa_to_plot,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
+    %LabelsCS ={'CS^{-}_{A} and CS^{-}_{B}', 'CS^{0}_{A} and CS^{-}_{0}', 'CS^{+}_{A} and CS^{+}_{B}','Pooled CS^{0} and CS^{+}'};
+    LabelsCS ={'CS^{-}', 'CS^{0}', 'CS^{+}','CS^{0} and CS^{+}'};
+    ylim([-.040 .020]); 
+    xlim([0 5]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):.020:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',1:4)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    %ylabel('Pre-Post Similarity Change ', 'FontSize',30,'FontName', 'Arial');
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new,'FontSize',30,'FontName', 'Arial');
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',30,'FontName', 'Arial');
+
+    
+    
+    %% Right OFC
+    diff_to_plot = [rsa_all_ofc_diff.all_diff(2,:); rsa_all_ofc_diff.all_diff(13,:); ...
+                    rsa_all_ofc_diff.all_diff(40,:); rsa_all_ofc_diff.all_diff(47,:); 
+                    rsa_all_ofc_diff.all_diff(62,:); rsa_all_ofc_diff.all_diff(65,:)];
+    
+                
+    %pool across CS0A/B and CS+A/B repetition similarity changes pre-post
+    pool_effect = mean(diff_to_plot(3:end,:));
+    [h, p, ci, stats] = ttest(pool_effect,0, 'tail','left')
+    [p,h,STATS] = signrank(pool_effect,0, 'tail','left')
+    mean(pool_effect)
+    std(pool_effect)
+    %calculate effect size
+    mes(pool_effect,0,'U3_1')
+
+    %pool across CS-A/B repetition similarity changes pre-post
+    pool_control = mean(diff_to_plot(1:2,:));
+    [h, p, ci, stats] = ttest(pool_control,0)
+    [p,h,STATS] = signrank(pool_control,0)
+    mean(pool_control)
+    std(pool_control)
+    %calculate effect size
+    mes(pool_control,0,'U3_1')
+    
+    
+    %compare pooled CS0A/B and CS+A/B (effect) and pooled CS-A/B (control)
+    %changes in similarity
+    [h, p, ci, stats] = ttest(pool_effect,pool_control, 'tail','left')
+    [p,h,STATS] = signrank(pool_effect,pool_control, 'tail','left')
+
+    %calculate Cohen's U3
+    mes(pool_effect, pool_control,'U3','isDep',1)    
+    
+    
+    %test each pooled effect vs. 0 
+    %CS-A/B (control)
+    pool_csminus = mean(diff_to_plot(1:2,:));
+    [h, p, ci, stats] = ttest(pool_csminus,0)
+    [p,h,STATS] = signrank(pool_csminus,0, 'tail','right')
+    mean(pool_csminus)
+    std(pool_csminus)
+    
+    %calculate effect size
+    mes(pool_csminus,0,'U3_1')
+    
+    %CS0A/B
+    pool_csnull = mean(diff_to_plot(3:4,:));
+    [h, p, ci, stats] = ttest(pool_csnull,0, 'tail','left')
+    [p,h,STATS] = signrank(pool_csnull,0, 'tail','left')
+    mean(pool_csnull)
+    std(pool_csnull)
+    
+    %calculate effect size
+    mes(pool_csnull,0,'U3_1')
+    
+    %CS+A/B 
+    pool_csplus = mean(diff_to_plot(5:6,:));
+    [h, p, ci, stats] = ttest(pool_csplus,0, 'tail','left')
+    [p,h,STATS] = signrank(pool_csplus,0, 'tail','left')
+    mean(pool_csplus)
+    std(pool_csplus) 
+    
+    %calculate effect size
+    mes(pool_csplus,0,'U3_1')
+    
+   
+    %Plot
+    rsa_to_plot = [pool_csminus' pool_csnull' pool_csplus' pool_effect'];
+    
+    positions = [1 2 3 4];   
+    pos = [positions-1; ...
+           positions+1];
+
+    mean_ofc_rsa = [mean(pool_csminus) mean(pool_csnull) mean(pool_csplus) mean(pool_effect)];
+                     
+    color_vec = [cols.k; cols.k; cols.k; cols.k];
+
+    figure;  
+    bar(1:4,mean_ofc_rsa, 'k', 'BarWidth', 0.6); hold all;
+    errorbar(1:4,mean_ofc_rsa, std(rsa_to_plot)./sqrt(size(rsa_to_plot,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
+    %LabelsCS ={'CS^{-}_{A} and CS^{-}_{B}', 'CS^{0}_{A} and CS^{-}_{0}', 'CS^{+}_{A} and CS^{+}_{B}','Pooled CS^{0} and CS^{+}'};
+    LabelsCS ={'CS^{-}', 'CS^{0}', 'CS^{+}','CS^{0} and CS^{+}'};
+    ylim([-.040 .020]); 
+    xlim([0 5]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):.020:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',1:4)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    %ylabel('Pre-Post Similarity Change ', 'FontSize',30,'FontName', 'Arial');
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new,'FontSize',30,'FontName', 'Arial');
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',30,'FontName', 'Arial');
+
+
+        
+    
+end   
+    
+%% pairwise/within-category decisions involving same-value CS 
+if sample == 1 || sample == 4
+  
+    median(within_choices)
+    max(within_choices)
+    min(within_choices)
+    
+    %test against 0.5
+    [p,h,STATS] = signrank(within_choices(:,1),0.5)
+    
+    %calculate effect size
+    mes(within_choices(:,1),0.5,'U3_1')
+    
+    [p,h,STATS] = signrank(within_choices(:,2),0.5, 'tail', 'left')
+    %calculate effect size
+    mes(within_choices(:,2),0.5,'U3_1')
+    
+    [p,h,STATS] = signrank(within_choices(:,3),0.5, 'tail', 'right')
+    
+    %calculate effect size
+    mes(within_choices(:,3),0.5,'U3_1')
+
+    
+    cols.k = [0 0 0];
+    cols.b = [0   15 175];
+    cols.y = [255 211 0];
+    
+    color_mat = [cols.k; cols.k; cols.y; cols.k; cols.b; cols.k];
+    
+    cols.k = [0 0 0];
+    cols.b = [0 .058 .686];
+    cols.y = [1  .828 0];
+    cols.grey = [0.7843 0.7843 0.7843];
+    cols.dgrey = [0.1922 0.2000 0.2078];
+    
+    positions = [1 3 5];
+    pos = [positions-.20; ...
+        positions+.20];
+    
+    %plot within-category choices
+    figure();
+    x = 0:6;
+    plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
+    hold all; 
+    boxplot(within_choices, {reshape(['A','B','C'],3,1) [1;2;3]},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.6,'FactorGap',50, 'Whisker',0);
+    scatter(linspace(pos(1,1), pos(2,1),length(within_choices)), within_choices(:,1), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(within_choices)), within_choices(:,2), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y);%,'LineWidth',.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(within_choices)), within_choices(:,3), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b);%,'LineWidth',.5);
+    LabelsCS ={'CS^{-}_{A} vs CS^{-}_{B}', 'CS^{0}_{A} vs CS^{0}_{B}', 'CS^{+}_{A} vs CS^{+}_{B}'};
+    ylim([0 1.05]); 
+    xlim([0 6]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',positions)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    %ylabel('Choice Probability', 'FontSize',60,'FontType', 'Arial','Color','k') 
+      % prepend a color for each tick label
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new);
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew);
+    
+    
+elseif sample == 2
+    
+    median(within_choices)
+    max(within_choices)
+    min(within_choices)
+    
+    %test against 0.5
+    [p,h,STATS] = signrank(within_choices(:,1),0.5, 'tail', 'left')
+    
+    %calculate effect size
+    mes(within_choices(:,1),0.5,'U3_1')
+    
+    [p,h,STATS] = signrank(within_choices(:,2),0.5, 'tail', 'right')
+    %calculate effect size
+    mes(within_choices(:,2),0.5,'U3_1')
+    
+    [p,h,STATS] = signrank(within_choices(:,3),0.5)
+    
+    %calculate effect size
+    mes(within_choices(:,3),0.5,'U3_1')
+
+    
+    cols.k = [0 0 0];
+    cols.b = [0   15 175];
+    cols.y = [255 211 0];
+    
+    color_mat = [cols.k; cols.k; cols.y; cols.k; cols.b; cols.k];
+    
+    cols.k = [0 0 0];
+    cols.b = [0 .058 .686];
+    cols.y = [1  .828 0];
+    cols.grey = [0.7843 0.7843 0.7843];
+    cols.dgrey = [0.1922 0.2000 0.2078];
+    
+    positions = [1 3 5];
+    pos = [positions-.20; ...
+        positions+.20];
+    
+    %plot within-category choices
+    figure();
+    x = 0:6;
+    plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
+    hold all; 
+    boxplot(within_choices, {reshape(['A','B','C'],3,1) [1;2;3]},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.6,'FactorGap',50, 'Whisker',0);
+    scatter(linspace(pos(1,1), pos(2,1),length(within_choices)), within_choices(:,1), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y);%,'LineWidth',.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(within_choices)), within_choices(:,2), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b);%,'LineWidth',.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(within_choices)), within_choices(:,3), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    LabelsCS ={'CS^{-}_{A} vs CS^{-}_{B}', 'CS^{0}_{A} vs CS^{0}_{B}', 'CS^{+}_{A} vs CS^{+}_{B}'};
+    ylim([0 1.05]); 
+    xlim([0 6]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',positions)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    %ylabel('Choice Probability', 'FontSize',60,'FontType', 'Arial','Color','k') 
+      % prepend a color for each tick label
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new);
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew);
+    
+    
+elseif sample == 3
+    
+    median(within_choices)
+    max(within_choices)
+    min(within_choices)
+    
+    %test against 0.5
+    [p,h,STATS] = signrank(within_choices(:,1),0.5)
+    
+    %calculate effect size
+    mes(within_choices(:,1),0.5,'U3_1')
+    
+    [p,h,STATS] = signrank(within_choices(:,2),0.5)
+    %calculate effect size
+    mes(within_choices(:,2),0.5,'U3_1')
+    
+    [p,h,STATS] = signrank(within_choices(:,3),0.5)
+    
+    %calculate effect size
+    mes(within_choices(:,3),0.5,'U3_1')
+    
+    cols.k = [0 0 0];
+    cols.b = [0   15 175];
+    cols.y = [255 211 0];
+    
+    color_mat = [cols.k; cols.k; cols.y; cols.k; cols.b; cols.k];
+    
+    cols.k = [0 0 0];
+    cols.b = [0 .058 .686];
+    cols.y = [1  .828 0];
+    cols.grey = [0.7843 0.7843 0.7843];
+    cols.dgrey = [0.1922 0.2000 0.2078];
+    
+    positions = [1 3 5];
+    pos = [positions-.20; ...
+        positions+.20];
+    
+    %plot within-category choices
+    figure();
+    x = 0:6;
+    plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
+    hold all; 
+    boxplot(within_choices, {reshape(['A','B','C'],3,1) [1;2;3]},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.6,'FactorGap',50, 'Whisker',0);
+    scatter(linspace(pos(1,1), pos(2,1),length(within_choices)), within_choices(:,1), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(within_choices)), within_choices(:,2), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.b,'LineWidth',.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(within_choices)), within_choices(:,3), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',.5);
+    LabelsCS ={'CS^{-}_{A} vs CS^{-}_{B}', 'CS^{0}_{A} vs CS^{0}_{B}', 'CS^{+}_{A} vs CS^{+}_{B}'};
+    ylim([0 1.05]); 
+    xlim([0 6]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',positions)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    %ylabel('Choice Probability', 'FontSize',60,'FontType', 'Arial','Color','k') 
+      % prepend a color for each tick label
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new);
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew);
+    
+end
+    
+    %% binary decisions involving critical CS (from revaluation choices)
+if sample == 1 || sample == 4
+    
+    critical_pairs = critical_pairs(:,[1:2 4:10 12]);%exclude "choices against itself"
+    
+    median(critical_pairs)
+    max(critical_pairs)
+    min(critical_pairs)
+
+    %CS0A
+    [p,h,STATS] = signrank(critical_pairs(:,1),0.5)   
+    [p,h,STATS] = signrank(critical_pairs(:,2),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,3),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,4),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,5),0.5)
+    
+    %CS+A
+    [p,h,STATS] = signrank(critical_pairs(:,6),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,7),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,8),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,9),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,10),0.5)
+    
+    cols.k = [0 0 0];
+    cols.b = [0   15 175];
+    cols.y = [255 211 0];
+    
+    color_mat = [cols.k; cols.k; cols.y; cols.k; cols.b; cols.k];
+    
+    cols.k = [0 0 0];
+    cols.b = [0 .058 .686];
+    cols.y = [1  .828 0];
+    cols.grey = [0.7843 0.7843 0.7843];
+    cols.dgrey = [0.1922 0.2000 0.2078];
+    
+    positions = [1 3 5 7 9];
+    pos = [positions-.27; ...
+        positions+.27];
+    
+    %CS0A
+    figure();
+    x = 0:10;
+    plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
+    hold all; 
+    boxplot(critical_pairs(:,1:5), {reshape(['A','B','C','D','E'],5,1) [1;2; 1; 2; 1]},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.8,'FactorGap',25, 'Whisker',0);
+    scatter(linspace(pos(1,1), pos(2,1),length(critical_pairs)), critical_pairs(:,1), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(critical_pairs)), critical_pairs(:,2), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(critical_pairs)), critical_pairs(:,3), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(critical_pairs)), critical_pairs(:,4), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(critical_pairs)), critical_pairs(:,5), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
+    ylim([0 1.05]); 
+    xlim([0 10]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',positions)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    ylabel('P(CS^{0}_{A})', 'FontSize',30,'FontName', 'Arial');
+      % prepend a color for each tick label
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new);
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew);
+    
+    %CS+A
+    figure();
+    x = 0:10;
+    plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
+    hold all; 
+    boxplot(critical_pairs(:,6:end), {reshape(['A','B','C','D','E'],5,1) [1;2; 1; 2; 1]},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.8,'FactorGap',25, 'Whisker',0);
+    scatter(linspace(pos(1,1), pos(2,1),length(critical_pairs)), critical_pairs(:,6), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(critical_pairs)), critical_pairs(:,7), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(critical_pairs)), critical_pairs(:,8), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(critical_pairs)), critical_pairs(:,9), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(critical_pairs)), critical_pairs(:,10), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{A}', 'CS^{0}_{B}', 'CS^{+}_{B}'};
+    ylim([0 1.05]); 
+    xlim([0 10]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',positions)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    ylabel('P(CS^{+}_{A})', 'FontSize',30,'FontName', 'Arial');
+    %ylabel('Choice Probability', 'FontSize',60,'FontType', 'Arial','Color','k') 
+      % prepend a color for each tick label
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new);
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew);
+
+elseif sample == 2
+    
+    critical_pairs = critical_pairs(:,[2:8 10:12]);%exclude "choices against itself"
+    
+    median(critical_pairs)
+    max(critical_pairs)
+    min(critical_pairs)
+    
+    %CS-A
+    [p,h,STATS] = signrank(critical_pairs(:,1),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,2),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,3),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,4),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,5),0.5)
+    
+    %CS0A
+    [p,h,STATS] = signrank(critical_pairs(:,6),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,7),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,8),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,9),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,10),0.5)
+    
+    cols.k = [0 0 0];
+    cols.b = [0   15 175];
+    cols.y = [255 211 0];
+    
+    color_mat = [cols.k; cols.k; cols.y; cols.k; cols.b; cols.k];
+    
+    cols.k = [0 0 0];
+    cols.b = [0 .058 .686];
+    cols.y = [1  .828 0];
+    cols.grey = [0.7843 0.7843 0.7843];
+    cols.dgrey = [0.1922 0.2000 0.2078];
+    
+    positions = [1 3 5 7 9];
+    pos = [positions-.27; ...
+        positions+.27];
+    
+    %CS-A
+    figure();
+    x = 0:10;
+    plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
+    hold all; 
+    boxplot(critical_pairs(:,1:5), {reshape(['A','B','C','D','E'],5,1) [1;2; 1; 2; 1]},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.8,'FactorGap',25, 'Whisker',0);
+    scatter(linspace(pos(1,1), pos(2,1),length(critical_pairs)), critical_pairs(:,1), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(critical_pairs)), critical_pairs(:,2), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(critical_pairs)), critical_pairs(:,3), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(critical_pairs)), critical_pairs(:,4), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(critical_pairs)), critical_pairs(:,5), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    LabelsCS ={'CS^{-}_{B}', 'CS^{0}_{A}','CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
+    ylim([0 1.05]); 
+    xlim([0 10]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',positions)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    ylabel('P(CS^{-}_{A})', 'FontSize',30,'FontName', 'Arial');
+    %ylabel('Choice Probability', 'FontSize',60,'FontType', 'Arial','Color','k') 
+      % prepend a color for each tick label
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new);
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew);
+    
+    %CS0A
+    figure();
+    x = 0:10;
+    plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
+    hold all; 
+    boxplot(critical_pairs(:,6:end), {reshape(['A','B','C','D','E'],5,1) [1;2; 1; 2; 1]},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.8,'FactorGap',25, 'Whisker',0);
+    scatter(linspace(pos(1,1), pos(2,1),length(critical_pairs)), critical_pairs(:,6), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(critical_pairs)), critical_pairs(:,7), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(critical_pairs)), critical_pairs(:,8), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(critical_pairs)), critical_pairs(:,9), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(critical_pairs)), critical_pairs(:,10), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
+    ylim([0 1.05]); 
+    xlim([0 10]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',positions)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    ylabel('P(CS^{0}_{A})', 'FontSize',30,'FontName', 'Arial');
+    %ylabel('Choice Probability', 'FontSize',60,'FontType', 'Arial','Color','k') 
+      % prepend a color for each tick label
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new);
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew);
+    
+elseif sample == 3
+
+    critical_pairs = critical_pairs(:,[2:8 10:16 18]);%exclude "choices against itself"
+    
+    median(critical_pairs)
+    max(critical_pairs)
+    min(critical_pairs)
+    
+    %CS-A
+    [p,h,STATS] = signrank(critical_pairs(:,1),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,2),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,3),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,4),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,5),0.5)
+    
+    %CS0A
+    [p,h,STATS] = signrank(critical_pairs(:,6),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,7),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,8),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,9),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,10),0.5)
+    
+    %CS+A
+    [p,h,STATS] = signrank(critical_pairs(:,11),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,12),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,13),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,14),0.5)
+    [p,h,STATS] = signrank(critical_pairs(:,15),0.5)
+    
+    cols.k = [0 0 0];
+    cols.b = [0   15 175];
+    cols.y = [255 211 0];
+    
+    color_mat = [cols.k; cols.k; cols.y; cols.k; cols.b; cols.k];
+    
+    cols.k = [0 0 0];
+    cols.b = [0 .058 .686];
+    cols.y = [1  .828 0];
+    cols.grey = [0.7843 0.7843 0.7843];
+    cols.dgrey = [0.1922 0.2000 0.2078];
+    
+    positions = [1 3 5 7 9];
+    pos = [positions-.27; ...
+        positions+.27];
+    
+    %CS-A
+    figure();
+    x = 0:10;
+    plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
+    hold all; 
+    boxplot(critical_pairs(:,1:5), {reshape(['A','B','C','D','E'],5,1) [1;2; 1; 2; 1]},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.8,'FactorGap',25, 'Whisker',0);
+    scatter(linspace(pos(1,1), pos(2,1),length(critical_pairs)), critical_pairs(:,1), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(critical_pairs)), critical_pairs(:,2), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(critical_pairs)), critical_pairs(:,3), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(critical_pairs)), critical_pairs(:,4), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(critical_pairs)), critical_pairs(:,5), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    LabelsCS ={'CS^{-}_{B}', 'CS^{0}_{A}','CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
+    ylim([0 1.05]); 
+    xlim([0 10]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',positions)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    ylabel('P(CS^{-}_{A})', 'FontSize',30,'FontName', 'Arial');
+    %ylabel('Choice Probability', 'FontSize',60,'FontType', 'Arial','Color','k') 
+      % prepend a color for each tick label
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new);
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew);
+    
+    %CS0A
+    figure();
+    x = 0:10;
+    plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
+    hold all; 
+    boxplot(critical_pairs(:,6:10), {reshape(['A','B','C','D','E'],5,1) [1;2; 1; 2; 1]},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.8,'FactorGap',25, 'Whisker',0);
+    scatter(linspace(pos(1,1), pos(2,1),length(critical_pairs)), critical_pairs(:,6), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(critical_pairs)), critical_pairs(:,7), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(critical_pairs)), critical_pairs(:,8), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(critical_pairs)), critical_pairs(:,9), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(critical_pairs)), critical_pairs(:,10), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
+    ylim([0 1.05]); 
+    xlim([0 10]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',positions)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    ylabel('P(CS^{0}_{A})', 'FontSize',30,'FontName', 'Arial');
+    %ylabel('Choice Probability', 'FontSize',60,'FontType', 'Arial','Color','k') 
+      % prepend a color for each tick label
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new);
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew);
+    
+    %CS+A
+    figure();
+    x = 0:10;
+    plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
+    hold all; 
+    boxplot(critical_pairs(:,11:end), {reshape(['A','B','C','D','E'],5,1) [1;2; 1; 2; 1]},'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.8,'FactorGap',25, 'Whisker',0);
+    scatter(linspace(pos(1,1), pos(2,1),length(critical_pairs)), critical_pairs(:,11), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(critical_pairs)), critical_pairs(:,12), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(critical_pairs)), critical_pairs(:,13), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(critical_pairs)), critical_pairs(:,14), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(critical_pairs)), critical_pairs(:,15), 150, 'o', 'MarkerFaceColor', cols.grey, 'MarkerEdgeColor', cols.k);%,'LineWidth',.5);
+    LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{A}', 'CS^{0}_{B}', 'CS^{+}_{B}'};
+    ylim([0 1.05]); 
+    xlim([0 10]);
+    box off
+    set(findobj(gca,'type','line'),'linew',5)
+    set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
+    ybounds = ylim;
+    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'TickDir','out')
+    set(gca,'xtick',positions)
+    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+    %set(gca,'XTickLabelRotation', 45);
+    set(gcf,'color','w');
+    set(gca,'ycolor',cols.k)
+    set(gca,'xcolor',cols.k)
+    ylabel('P(CS^{+}_{A})', 'FontSize',30,'FontName', 'Arial');
+    %ylabel('Choice Probability', 'FontSize',60,'FontType', 'Arial','Color','k') 
+      % prepend a color for each tick label
+    ticklabels_new = cell(size(LabelsCS));
+    for i = 1:length(LabelsCS)
+        ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+    end
+    % set the tick labels
+    set(gca, 'XTickLabel', ticklabels_new);
+    % prepend a color for each tick label
+    LabelsY = get(gca,'YTickLabel');
+    ticklabels_ynew = cell(size(LabelsY));
+    for i = 1:length(LabelsY)
+        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+    end
+    % set the tick labels
+    set(gca, 'YTickLabel', ticklabels_ynew);
+    
+end
+
+%% comparison of difference of binary choices between critical CS and respective same-value CS
+
+if sample == 1 || sample == 4
+        
+    median(critical_diff)
+    max(critical_diff)
+    min(critical_diff)
+    
+    
+    %CS0AvsCS+A and CS0BvsCS+B
+    [p,h,STATS] = signrank(critical_diff(:,1),critical_diff(:,2))
+
+elseif sample == 2
+        
+    median(critical_diff)
+    max(critical_diff)
+    min(critical_diff)
+    
+    
+    %CS-AvsCS0A and CS-BvsCS0B
+    [p,h,STATS] = signrank(critical_diff(:,1),critical_diff(:,2))
+    
+elseif sample == 3
+        
+    median(critical_diff)
+    max(critical_diff)
+    min(critical_diff)
+    
+    
+    %CS-AvsCS0A and CS-BvsCS0B
+    [p,h,STATS] = signrank(critical_diff(:,1),critical_diff(:,2))
+    
+    %CS0AvsCS+A and CS0BvsCS+B
+    [p,h,STATS] = signrank(critical_diff(:,3),critical_diff(:,4))
+
 end
 
