@@ -21,8 +21,8 @@ num_simulations=10000;
 % run version 3 (exp3 with parameters 3, 2)
 % run version 4 (fmri with parameters 4, 2)
 
-data_path = '/Users/lennart/behavioral_data/'; %set path to exp1, exp 2, exp3 or fmri here
-res_dir =   '/Users/lennart/behavioral_data/sim_data/'; %specify folder to save structure with computational parameters
+data_path = '...'; %set path to exp1, exp 2, exp3 or fmri here
+res_dir =   '...'; %specify folder to save structure with computational parameters
 
 if version < 4
     params_dir= ['/Users/lennart/behavioral_data/params/candyman' num2str(version) filesep];
@@ -36,28 +36,28 @@ if version == 1
     datadir = data_path;
     vp = dir(fullfile([data_path, 'candymanLOG*']));
     load([params_dir 'cp_rw_3Alpha_1Tau_2_ini.mat']); %select best-fitting model
-    load('/Users/lennart/behavioral_data/params/candyman1/identifier.mat'); %load identifier vector to only model included subjects
+    load('.../identifier.mat'); %load identifier vector to only model included subjects
 elseif version == 2
     rev_s = [1 3]; %exp2
     data_path = fullfile([data_path, 'exp2/']);
     datadir = data_path;
     vp = dir(fullfile([data_path, 'candyman2LOG*']));
     load([params_dir 'cp_asso_3Alpha_1Tau_2_ini.mat']); %select best-fitting model
-    load('/Users/lennart/behavioral_data/params/candyman2/identifier.mat'); %load identifier vector to only model included subjects
+    load('.../identifier.mat'); %load identifier vector to only model included subjects
 elseif version == 3
     rev_s = [1 3 5]; %exp3
     data_path = fullfile([data_path, 'exp3/']);
     datadir = data_path;
     vp = dir(fullfile([data_path, 'candyman3LOG*']));
     load([params_dir 'cp_asso_3Alpha_1Tau_2_ini.mat']); %select best-fitting model
-    load('/Users/lennart/behavioral_data/params/candyman3/identifier.mat'); %load identifier vector to only model included subjects
+    load('.../identifier.mat'); %load identifier vector to only model included subjects
 elseif version == 4
     rev_s = [3 5]; %fmri
     data_path = fullfile([data_path, 'fmri/']);
     datadir = data_path;
     vp = dir(fullfile([data_path, 'candyman_fmriLOG_9*']));
     load([params_dir 'cp_asso_3Alpha_1Tau_2_ini.mat']); %select best-fitting model
-    load('/Users/lennart/behavioral_data/params/candyman_fmri/identifier.mat'); %load identifier vector to only model included subjects
+    load('.../identifier.mat'); %load identifier vector to only model included subjects
 end
 
 vp = vp(identifier);
