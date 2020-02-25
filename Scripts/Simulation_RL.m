@@ -36,28 +36,28 @@ if version == 1
     datadir = data_path;
     vp = dir(fullfile([data_path, 'candymanLOG*']));
     load([params_dir 'cp_rw_3Alpha_1Tau_2_ini.mat']); %select best-fitting model
-    load('.../identifier.mat'); %load identifier vector to only model included subjects
+    load([params_dir 'identifier.mat']); %load identifier vector to only model included subjects
 elseif version == 2
     rev_s = [1 3]; %exp2
     data_path = fullfile([data_path, 'exp2/']);
     datadir = data_path;
     vp = dir(fullfile([data_path, 'candyman2LOG*']));
     load([params_dir 'cp_asso_3Alpha_1Tau_2_ini.mat']); %select best-fitting model
-    load('.../identifier.mat'); %load identifier vector to only model included subjects
+    load([params_dir 'identifier.mat']); %load identifier vector to only model included subjects
 elseif version == 3
     rev_s = [1 3 5]; %exp3
     data_path = fullfile([data_path, 'exp3/']);
     datadir = data_path;
     vp = dir(fullfile([data_path, 'candyman3LOG*']));
     load([params_dir 'cp_asso_3Alpha_1Tau_2_ini.mat']); %select best-fitting model
-    load('.../identifier.mat'); %load identifier vector to only model included subjects
+    load([params_dir 'identifier.mat']); %load identifier vector to only model included subjects
 elseif version == 4
     rev_s = [3 5]; %fmri
     data_path = fullfile([data_path, 'fmri/']);
     datadir = data_path;
     vp = dir(fullfile([data_path, 'candyman_fmriLOG_9*']));
     load([params_dir 'cp_asso_3Alpha_1Tau_2_ini.mat']); %select best-fitting model
-    load('.../identifier.mat'); %load identifier vector to only model included subjects
+    load([params_dir 'identifier.mat']); %load identifier vector to only model included subjects
 end
 
 vp = vp(identifier);
