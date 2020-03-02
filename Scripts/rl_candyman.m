@@ -38,16 +38,6 @@ function [energy, chprob] = rl_candyman(version, mechanism, u_sub_r, r, rev_s, r
                     %only take final values from learning phase to revaluation
                     values_phase1 = v(end,:);
                     values_phase1 = values_phase1.*u_sub_r;
-                    
-                elseif mechanism == 3
-                    % update values in learning phase and scale per trial by reward
-                    % subjective value
-                    for t=1:size(r,1)
-                        v(t+1,:) = v(t,:) + alpha1*(r(t,:) - v(t,:));
-                        v(t+1,:) = v(t+1,:).*u_sub_r;
-                    end
-                    %only take final values from learning phase to revaluation
-                    values_phase1 = v(end,:);  
                 end
                 
                 

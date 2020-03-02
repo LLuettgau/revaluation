@@ -19,7 +19,7 @@ inivals = 2; %set initial value for optimization: 1, 0, or 2 (based on grid sear
 %mechanism = 1; %set value estimation algorithm, 1 = Rescorla-Wagner with 0, .5 and 1 as inputs, 2 = Rescorla-Wagner with 0/1 as inputs (depending on reward received or not), 
                %final value estimates are multiplied with individual rating
                %of unconditioned stimulus during initial foodcue rating
-               %3 = trial-by-trial scaling
+
 
 data_path = '...'; %set path to exp1, exp 2, exp3 or fmri here
 res_dir = '...'; %specify folder to save structure with computational parameters
@@ -145,7 +145,7 @@ if results(iteration,1) >= .5 && sum(data.FOC(:,4) > 0) > length(data.FOC(:,4))-
     u_sub_r(3:4) = uni_sub_r(2)/100;
     u_sub_r(5:6) = uni_sub_r(3)/100;
     
-    if mechanism == 2 || mechanism == 3
+    if mechanism == 2
        r = data(:,14); %reward presented or not?  
     end
     
@@ -343,12 +343,6 @@ if version == 1
         else
            save([pwd,filesep,'exp1_cp_asso_', num2str(alphas), 'Alpha_1Tau_pso.mat'],'cp');
         end
-    elseif mechanism == 3
-        if pso == 0
-           save([pwd,filesep,'exp1_cp_tbt_asso_', num2str(alphas), 'Alpha_1Tau_', num2str(inivals), '_ini.mat'],'cp');
-        else
-           save([pwd,filesep,'exp1_cp_tbt_asso_', num2str(alphas), 'Alpha_1Tau_pso.mat'],'cp');
-        end   
     end
 elseif version == 2
     cd(res_dir)
@@ -363,12 +357,6 @@ elseif version == 2
            save([pwd,filesep,'exp2_cp_asso_', num2str(alphas), 'Alpha_1Tau_', num2str(inivals), '_ini.mat'],'cp');
         else
            save([pwd,filesep,'exp2_cp_asso_', num2str(alphas), 'Alpha_1Tau_pso.mat'],'cp');
-        end
-    elseif mechanism == 3    
-        if pso == 0
-           save([pwd,filesep,'exp2_cp_tbt_asso_', num2str(alphas), 'Alpha_1Tau_', num2str(inivals), '_ini.mat'],'cp');
-        else
-           save([pwd,filesep,'exp2_cp_tbt_asso_', num2str(alphas), 'Alpha_1Tau_pso.mat'],'cp');
         end
     end
 elseif version == 3
@@ -385,13 +373,6 @@ elseif version == 3
         else
            save([pwd,filesep,'exp3_cp_asso_', num2str(alphas), 'Alpha_1Tau_pso.mat'],'cp');
         end
-    elseif mechanism == 3    
-        if pso == 0
-           save([pwd,filesep,'exp3_cp_tbt_asso_', num2str(alphas), 'Alpha_1Tau_', num2str(inivals), '_ini.mat'],'cp');
-        else
-           save([pwd,filesep,'exp1_cp_tbt_asso_', num2str(alphas), 'Alpha_1Tau_pso.mat'],'cp');
-        end 
-        
     end   
 elseif version == 4
     cd(res_dir)
@@ -407,12 +388,6 @@ elseif version == 4
         else
            save([pwd,filesep,'fmri_cp_asso_', num2str(alphas), 'Alpha_1Tau_pso.mat'],'cp');
         end
-    elseif mechanism == 3    
-        if pso == 0
-           save([pwd,filesep,'fmri_cp_tbt_asso_', num2str(alphas), 'Alpha_1Tau_', num2str(inivals), '_ini.mat'],'cp');
-        else
-           save([pwd,filesep,'fmri_cp_tbt_asso_', num2str(alphas), 'Alpha_1Tau_pso.mat'],'cp');
-        end 
         
     end  
     

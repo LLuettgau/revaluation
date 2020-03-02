@@ -12,7 +12,6 @@ inivals = 2; %set initial value for optimization: 1, 0, or 2 (based on grid sear
 %mechanism = 1; %set value estimation algorithm, 1 = Rescorla-Wagner with 0, .5 and 1 as inputs, 2 = Rescorla-Wagner with 0/1 as inputs (depending on reward received or not),
 %final value estimates are multiplied with individual rating
 %of unconditioned stimulus during initial foodcue rating 
-%3 = trial-by-trial scaling
 
 num_simulations=10000;
 
@@ -166,7 +165,7 @@ for iteration=1:numel(vp)
         u_sub_r(3:4) = uni_sub_r(2)/100;
         u_sub_r(5:6) = uni_sub_r(3)/100;
         
-        if mechanism == 2 || mechanism == 3
+        if mechanism == 2
             r = data(:,14); %reward presented or not?
         end
         
@@ -246,44 +245,11 @@ median(res_to_plot)
 max(res_to_plot)
 min(res_to_plot)
 
-% repeated measures ANOVA on overall choice probabilities
-data = res_to_plot;
-varNames = {'S1A','S1B','S2A','S2B','S3A','S3B'};
-
-t = array2table(data,'VariableNames',varNames);
-
-factorNames = {'valence','stimulus'};
-within = table({'low'; 'low';'med';'med';'hi';'hi'},{'A';'B';'A';'B';'A';'B'},'VariableNames',factorNames);
-
-
-rm = fitrm(t,'S1A-S3B~1','WithinDesign',within); 
-
-
-[ranovatbl] = ranova(rm, 'WithinModel', 'valence*stimulus');
-
-disp('overall choice probability rmANOVA')
-ranovatbl
-
-% Wilcoxon signed-rank test on overall choice probabilities
-%CS1A = CS-A vs. CS1B = CS-B
-
-disp('overall choice probability CS-A vs. CS-B')
-[P,H,STATS] = signrank(res_to_plot(:,1), res_to_plot(:,2))
-
-%CS2A = CS0A vs. CS2B = CS0B
-disp('overall choice probability CS0A vs. CS0B')
-[P,H,STATS] = signrank(res_to_plot(:,3), res_to_plot(:,4))
-
-
-%CS3A = CS+A vs. CS3B = CS+B
-disp('overall choice probability CS+A vs. CS+B')
-[P,H,STATS] = signrank(res_to_plot(:,5), res_to_plot(:,6))
-
 
 
 
 %% plot simulated behavioral results
-%used for Figure S3
+%used for Figure S1
 
 cols.k = [0 0 0];
 cols.b = [0   15 175];
