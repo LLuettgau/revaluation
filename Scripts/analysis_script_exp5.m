@@ -407,13 +407,13 @@ critical_choices = [res_to_plot(:,1) res_to_plot(:,3)];
    scatter(linspace(pos(1,1), pos(2,1),length(res_to_plot)), res_to_plot(:,1), 200, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',1.5); hold all;
    scatter(linspace(pos(1,2), pos(2,2), length(res_to_plot)), res_to_plot(:,3), 200, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',1.5);
    LabelsCS ={'CS^{0}_{.8} vs CS^{0}_{.2}', 'CS^{+}_{.8} vs CS^{+}_{.2}'};
-   ylim([0 1.05]);
+   ylim([-.05 1.05]);     
    xlim([0 1]);
    box off
    set(findobj(gca,'type','line'),'linew',5)
    set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
    ybounds = ylim;
-   set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+   set(gca,'YTick',0:0.25:1, 'FontSize',30,'FontName', 'Arial');    
    set(gca,'TickDir','out')
    set(gca,'xtick',positions)
    set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');

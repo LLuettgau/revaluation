@@ -840,13 +840,13 @@ if sample == 1
     scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
     scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
     LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{A}', 'CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
-    ylim([0 1.05]); 
+    ylim([-.05 1.05]);     
     xlim([0 9]);
     box off
     set(findobj(gca,'type','line'),'linew',5)
     set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
     ybounds = ylim;
-    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'YTick',0:0.25:1, 'FontSize',30,'FontName', 'Arial');    
     set(gca,'TickDir','out')
     set(gca,'xtick',positions)
     set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
@@ -886,13 +886,13 @@ elseif sample == 2
     scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
     scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
     LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{A}', 'CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
-    ylim([0 1.05]); 
+    ylim([-.05 1.05]);     
     xlim([0 9]);
     box off
     set(findobj(gca,'type','line'),'linew',5)
     set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
     ybounds = ylim;
-    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'YTick',0:0.25:1, 'FontSize',30,'FontName', 'Arial');  
     set(gca,'TickDir','out')
     set(gca,'xtick',positions)
     set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
@@ -932,13 +932,13 @@ elseif sample == 3
     scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
     scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
     LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{A}', 'CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
-    ylim([0 1.05]); 
+    ylim([-.05 1.05]);     
     xlim([0 9]);
     box off
     set(findobj(gca,'type','line'),'linew',5)
     set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
     ybounds = ylim;
-    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'YTick',0:0.25:1, 'FontSize',30,'FontName', 'Arial');  
     set(gca,'TickDir','out')
     set(gca,'xtick',positions)
     set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
@@ -978,13 +978,13 @@ elseif sample == 4
     scatter(linspace(pos(1,5), pos(2,5), length(res_to_plot)), res_to_plot(:,5), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
     scatter(linspace(pos(1,6), pos(2,6), length(res_to_plot)), res_to_plot(:,6), 150, 'o', 'MarkerFaceColor', cols.k, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
     LabelsCS ={'CS^{-}_{A}', 'CS^{-}_{B}', 'CS^{0}_{A}', 'CS^{0}_{B}', 'CS^{+}_{A}', 'CS^{+}_{B}'};
-    ylim([0 1.05]); 
+    ylim([-.05 1.05]);     
     xlim([0 9]);
     box off
     set(findobj(gca,'type','line'),'linew',5)
     set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
     ybounds = ylim;
-    set(gca,'YTick',ybounds(1):0.25:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    set(gca,'YTick',0:0.25:1, 'FontSize',30,'FontName', 'Arial');  
     set(gca,'TickDir','out')
     set(gca,'xtick',positions)
     set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
@@ -1200,8 +1200,8 @@ if sample == 4
     set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',15,'FontName', 'Arial');
 
     positions = [1 2 4 5 7 8];   
-    pos = [positions-1; ...
-           positions+1];
+    pos = [positions-.2; ...
+           positions+.2];
 
     mean_hipp_asso_strength = [mean(hippocampus_pre_1Avs1B);
                                mean(hippocampus_post_1Avs1B);
@@ -1214,17 +1214,25 @@ if sample == 4
     size_vec = [1 2 4 5 7 8];
     color_vec = [cols.k; cols.k; cols.k; cols.y; cols.y; cols.k; cols.b; cols.b];
 
+    
     a = figure();  
-    bar(1:8,mean_hipp_asso_strength, 'k', 'BarWidth', 0.6); hold all;
-    errorbar(size_vec,mean_hipp_asso_strength(size_vec,:), std(hipp_asso_strength)./sqrt(size(hipp_asso_strength,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
+    bar(1:8,mean_hipp_asso_strength, 'w', 'BarWidth', 0.6, 'linewidth', 2.5); hold all; 
+    scatter(linspace(pos(1,1), pos(2,1),length(hipp_asso_strength(:,1))), hipp_asso_strength(:,1), 150, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(hipp_asso_strength(:,2))), hipp_asso_strength(:,2), 150, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(hipp_asso_strength(:,3))), hipp_asso_strength(:,3), 150, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(hipp_asso_strength(:,4))), hipp_asso_strength(:,4), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',0.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(hipp_asso_strength(:,5))), hipp_asso_strength(:,5), 150, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,6), pos(2,6), length(hipp_asso_strength(:,6))), hipp_asso_strength(:,6), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
+    errorbar(size_vec,mean_hipp_asso_strength(size_vec,:), std(hipp_asso_strength)./sqrt(size(hipp_asso_strength,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 4);
     LabelsCS ={'PRE', 'POST','PRE', 'POST', 'PRE', 'POST'};
-    ylim([-80 80]); 
+    ylim([-700 360]); 
     xlim([0 9]);
     box off
     set(findobj(gca,'type','line'),'linew',5)
     set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
     ybounds = ylim;
-    set(gca,'YTick',ybounds(1):40:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    yline(0, 'linewidth', 2.5)
+    set(gca,'YTick',ybounds(1):175:ybounds(2), 'FontSize',30,'FontName', 'Arial');
     set(gca,'TickDir','out')
     set(gca,'xtick',size_vec)
     set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
@@ -1296,16 +1304,23 @@ if sample == 4
                                mean(-1*(right_ofc_post_3Avs3B))];
 
     d = figure();  
-    bar(1:8,mean_ofc_asso_strength, 'k', 'BarWidth', 0.6); hold all;
-    errorbar(size_vec,mean_ofc_asso_strength(size_vec,:), std(ofc_asso_strength)./sqrt(size(ofc_asso_strength,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
+    bar(1:8,mean_ofc_asso_strength, 'w', 'BarWidth', 0.6, 'linewidth', 2.5); hold all;
+    scatter(linspace(pos(1,1), pos(2,1),length(ofc_asso_strength(:,1))), ofc_asso_strength(:,1), 150, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(ofc_asso_strength(:,2))), ofc_asso_strength(:,2), 150, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(ofc_asso_strength(:,3))), ofc_asso_strength(:,3), 150, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(ofc_asso_strength(:,4))), ofc_asso_strength(:,4), 150, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',0.5);
+    scatter(linspace(pos(1,5), pos(2,5), length(ofc_asso_strength(:,5))), ofc_asso_strength(:,5), 150, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,6), pos(2,6), length(ofc_asso_strength(:,6))), ofc_asso_strength(:,6), 150, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
+    errorbar(size_vec,mean_ofc_asso_strength(size_vec,:), std(ofc_asso_strength)./sqrt(size(ofc_asso_strength,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 4);
     LabelsCS ={'PRE', 'POST','PRE', 'POST', 'PRE', 'POST'};
-    ylim([-80 80]); 
+    ylim([-700 360]); 
     xlim([0 9]);
     box off
     set(findobj(gca,'type','line'),'linew',5)
     set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
     ybounds = ylim;
-    set(gca,'YTick',ybounds(1):40:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    yline(0, 'linewidth', 2.5)
+    set(gca,'YTick',ybounds(1):175:ybounds(2), 'FontSize',30,'FontName', 'Arial');
     set(gca,'TickDir','out')
     set(gca,'xtick',size_vec)
     set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
@@ -1336,7 +1351,7 @@ if sample == 4
 
 
     
-    %% used this plot for illustration in paper - Figure 3B
+    %% used this plot for illustration in paper - Figure 4B
 
     %calculation of overall choice prob. differences
     diff_3A_3B = (res_to_plot(:,5) - res_to_plot(:,6));
@@ -1851,7 +1866,7 @@ if sample == 4
 
 
     
-    %% Representational Similarity Analysis
+    %% Representational Similarity Analysis - Figure 3
     
     %pool similarity across all stimuli - 
     %CS-A/B --> 3,1 and 4,2 == 2nd and 13th row
@@ -1923,7 +1938,12 @@ if sample == 4
     mes(pool_csplus,0,'U3_1')
     
     
+   
     %Plot
+    cols.g = [0 .6 0];
+    cols.v = [.698 .4 1];
+
+    
     rsa_to_plot = [pool_csminus' pool_csnull' pool_csplus' pool_effect'];
     
     positions = [1 2 3 4];   
@@ -1933,19 +1953,24 @@ if sample == 4
     mean_hippo_rsa = [mean(pool_csminus) mean(pool_csnull) mean(pool_csplus) mean(pool_effect)];
                      
     color_vec = [cols.k; cols.k; cols.k; cols.k];
-
+    
     figure;  
-    bar(1:4,mean_hippo_rsa, 'k', 'BarWidth', 0.6); hold all;
+    bar(1:4,mean_hippo_rsa, 'w', 'BarWidth', 0.6, 'linewidth', 2.5); hold all;
+    scatter(linspace(pos(1,1), pos(2,1),length(rsa_to_plot(:,1))), rsa_to_plot(:,1), 350, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(rsa_to_plot(:,2))), rsa_to_plot(:,2), 350, 'o', 'MarkerFaceColor',  cols.y, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(rsa_to_plot(:,3))), rsa_to_plot(:,3), 350, 'o', 'MarkerFaceColor',  cols.b, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(rsa_to_plot(:,4))), rsa_to_plot(:,4), 350, 'o', 'MarkerFaceColor', cols.v, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
     errorbar(1:4,mean_hippo_rsa, std(rsa_to_plot)./sqrt(size(rsa_to_plot,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
     %LabelsCS ={'CS^{-}_{A} and CS^{-}_{B}', 'CS^{0}_{A} and CS^{-}_{0}', 'CS^{+}_{A} and CS^{+}_{B}','Pooled CS^{0} and CS^{+}'};
     LabelsCS ={'CS^{-}', 'CS^{0}', 'CS^{+}','CS^{0} and CS^{+}'};
-    ylim([-.040 .020]); 
+    ylim([-.25 .375]); 
     xlim([0 5]);
     box off
     set(findobj(gca,'type','line'),'linew',5)
     set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
     ybounds = ylim;
-    set(gca,'YTick',ybounds(1):.020:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    yline(0, 'linewidth', 2.5)
+    set(gca,'YTick',ybounds(1):.125:ybounds(2), 'FontSize',30,'FontName', 'Arial');
     set(gca,'TickDir','out')
     set(gca,'xtick',1:4)
     set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
@@ -2041,25 +2066,33 @@ if sample == 4
     rsa_to_plot = [pool_csminus' pool_csnull' pool_csplus' pool_effect'];
     
     positions = [1 2 3 4];   
-    pos = [positions-1; ...
-           positions+1];
+    pos = [positions-.2; ...
+           positions+.2];
 
     mean_ofc_rsa = [mean(pool_csminus) mean(pool_csnull) mean(pool_csplus) mean(pool_effect)];
                      
     color_vec = [cols.k; cols.k; cols.k; cols.k];
 
+
+    
+    
     figure;  
-    bar(1:4,mean_ofc_rsa, 'k', 'BarWidth', 0.6); hold all;
+    bar(1:4,mean_ofc_rsa, 'w', 'BarWidth', 0.6, 'linewidth', 2.5); hold all;
+    scatter(linspace(pos(1,1), pos(2,1),length(rsa_to_plot(:,1))), rsa_to_plot(:,1), 350, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(rsa_to_plot(:,2))), rsa_to_plot(:,2), 350, 'o', 'MarkerFaceColor',  cols.y, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(rsa_to_plot(:,3))), rsa_to_plot(:,3), 350, 'o', 'MarkerFaceColor',  cols.b, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(rsa_to_plot(:,4))), rsa_to_plot(:,4), 350, 'o', 'MarkerFaceColor', cols.v, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
     errorbar(1:4,mean_ofc_rsa, std(rsa_to_plot)./sqrt(size(rsa_to_plot,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
     %LabelsCS ={'CS^{-}_{A} and CS^{-}_{B}', 'CS^{0}_{A} and CS^{-}_{0}', 'CS^{+}_{A} and CS^{+}_{B}','Pooled CS^{0} and CS^{+}'};
     LabelsCS ={'CS^{-}', 'CS^{0}', 'CS^{+}','CS^{0} and CS^{+}'};
-    ylim([-.040 .020]); 
+    ylim([-.25 .375]); 
     xlim([0 5]);
     box off
     set(findobj(gca,'type','line'),'linew',5)
     set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
     ybounds = ylim;
-    set(gca,'YTick',ybounds(1):.020:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    yline(0, 'linewidth', 2.5)
+    set(gca,'YTick',ybounds(1):.125:ybounds(2), 'FontSize',30,'FontName', 'Arial');
     set(gca,'TickDir','out')
     set(gca,'xtick',1:4)
     set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
