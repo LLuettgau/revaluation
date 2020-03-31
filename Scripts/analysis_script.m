@@ -1644,7 +1644,7 @@ if sample == 4
     [rho,p] = corr(diff_2A_2B,diff_vta_cached_value, 'type', 'Spearman')
     
     
-    %% Individual contrasts for weakening of CS0A and strengthening of CS+A
+    %% Individual contrasts for weakening of CS0A and strengthening of CS+A - Figure S2
     
     %Hippocampus     
     hipp_individual_asso = [hippocampus_pre_2A hippocampus_post_2A -1*(hippocampus_pre_3A) -1*(hippocampus_post_3A)];
@@ -1710,8 +1710,8 @@ if sample == 4
 
 
     positions = [1 2 4 5];   
-    pos = [positions-1; ...
-           positions+1];
+    pos = [positions-.2; ...
+           positions+.2];
 
     mean_hipp_asso_strength = [mean(hippocampus_pre_2A);
                                mean(hippocampus_post_2A);
@@ -1719,19 +1719,25 @@ if sample == 4
                                mean(-1*(hippocampus_pre_3A));
                                mean(-1*(hippocampus_post_3A))];
     size_vec = [1 2 4 5];
-    color_vec = [cols.k; cols.k; cols.k; cols.y; cols.y; cols.k; cols.b; cols.b];
-
+    color_vec = [cols.k; cols.k; cols.k; cols.y; cols.y; cols.k; cols.b; cols.b];   
+    
+    
     a = figure();  
-    bar(1:5,mean_hipp_asso_strength, 'k', 'BarWidth', 0.6); hold all;
-    errorbar(size_vec,mean_hipp_asso_strength(size_vec,:), std(hipp_individual_asso)./sqrt(size(hipp_individual_asso,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
+    bar(1:5,mean_hipp_asso_strength, 'w', 'BarWidth', 0.6, 'linewidth', 2.5); hold all;
+    scatter(linspace(pos(1,1), pos(2,1),length(hipp_individual_asso(:,1))), hipp_individual_asso(:,1), 200, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(hipp_individual_asso(:,2))), hipp_individual_asso(:,2), 200, 'o', 'MarkerFaceColor',  cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',0.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(hipp_individual_asso(:,3))), hipp_individual_asso(:,3), 200, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(hipp_individual_asso(:,4))), hipp_individual_asso(:,4), 200, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
+    errorbar(size_vec,mean_hipp_asso_strength(size_vec,:), std(hipp_individual_asso)./sqrt(size(hipp_individual_asso,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 4);
     LabelsCS ={'PRE', 'POST','PRE', 'POST'};
-    ylim([-45 30]); 
+    ylim([-500 250]); 
     xlim([0 6]);
     box off
     set(findobj(gca,'type','line'),'linew',5)
     set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
     ybounds = ylim;
-    set(gca,'YTick',ybounds(1):15:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    yline(0, 'linewidth', 2.5)
+    set(gca,'YTick',ybounds(1):125:ybounds(2), 'FontSize',30,'FontName', 'Arial');
     set(gca,'TickDir','out')
     set(gca,'xtick',size_vec)
     set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
@@ -1752,9 +1758,10 @@ if sample == 4
         ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
     end
     % set the tick labels
-    set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',30,'FontName', 'Arial');
-
-
+    set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',30,'FontName', 'Arial');  
+    
+    
+    
     
     %OFC   
     ofc_individual_asso = [right_ofc_pre_2A right_ofc_post_2A -1*(right_ofc_pre_3A) -1*(right_ofc_post_3A)];
@@ -1820,8 +1827,8 @@ if sample == 4
 
 
     positions = [1 2 4 5];   
-    pos = [positions-1; ...
-           positions+1];
+    pos = [positions-.2; ...
+           positions+.2];
 
     mean_ofc_asso_strength = [mean(right_ofc_pre_2A);
                                mean(right_ofc_post_2A);
@@ -1832,16 +1839,21 @@ if sample == 4
     color_vec = [cols.k; cols.k; cols.k; cols.y; cols.y; cols.k; cols.b; cols.b];
 
     a = figure();  
-    bar(1:5,mean_ofc_asso_strength, 'k', 'BarWidth', 0.6); hold all;
-    errorbar(size_vec,mean_ofc_asso_strength(size_vec,:), std(ofc_individual_asso)./sqrt(size(ofc_individual_asso,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
+    bar(1:5,mean_ofc_asso_strength, 'w', 'BarWidth', 0.6, 'linewidth', 2.5); hold all;
+    scatter(linspace(pos(1,1), pos(2,1),length(ofc_individual_asso(:,1))), ofc_individual_asso(:,1), 200, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5); 
+    scatter(linspace(pos(1,2), pos(2,2), length(ofc_individual_asso(:,2))), ofc_individual_asso(:,2), 200, 'o', 'MarkerFaceColor',  cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',0.5);
+    scatter(linspace(pos(1,3), pos(2,3), length(ofc_individual_asso(:,3))), ofc_individual_asso(:,3), 200, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
+    scatter(linspace(pos(1,4), pos(2,4), length(ofc_individual_asso(:,4))), ofc_individual_asso(:,4), 200, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',0.5);
+    errorbar(size_vec,mean_ofc_asso_strength(size_vec,:), std(ofc_individual_asso)./sqrt(size(ofc_individual_asso,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 4);
     LabelsCS ={'PRE', 'POST','PRE', 'POST'};
-    ylim([-45 30]); 
+    ylim([-500 250]); 
     xlim([0 6]);
     box off
     set(findobj(gca,'type','line'),'linew',5)
     set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
     ybounds = ylim;
-    set(gca,'YTick',ybounds(1):15:ybounds(2), 'FontSize',30,'FontName', 'Arial');
+    yline(0, 'linewidth', 2.5)
+    set(gca,'YTick',ybounds(1):125:ybounds(2), 'FontSize',30,'FontName', 'Arial');
     set(gca,'TickDir','out')
     set(gca,'xtick',size_vec)
     set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
@@ -1863,7 +1875,6 @@ if sample == 4
     end
     % set the tick labels
     set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',30,'FontName', 'Arial');
-
 
     
     %% Representational Similarity Analysis - Figure 3
