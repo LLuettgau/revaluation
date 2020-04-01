@@ -4,7 +4,7 @@
 
 clc; clear all; close all;
 
-sample = 4; %determine experiment to be investigated here: 1 = exp1, 2 = exp2, 3 = exp3, 4 = fmri
+sample = 1; %determine experiment to be investigated here: 1 = exp1, 2 = exp2, 3 = exp3, 4 = fmri
 
 exclude_outliers = 1; if exclude_outliers; choice_crit = .50; end %0 = all, 1 = no outliers, 2 = only outliers 
 
@@ -334,15 +334,18 @@ if sample == 4
         prepostkanjis = find(dataset_pre.ratingkanjis(5,j) == dataset_post.postratingkanjis(5,:));
         value = find(dataset_pre.ratingkanjis(5,j) == dataset_pre.FOC(:,5));
         valuekanji = dataset_pre.FOC(value(1),8) ;
+        order_kanjis = dataset_pre.FOC(value(1),26);
 
         diffkanji(1,j) = dataset_pre.ratingkanjis(2,j);
         diffkanji(2,j) = dataset_post.postratingkanjis(2,prepostkanjis);
         diffkanji(3,j) = dataset_post.postratingkanjis(2,prepostkanjis) - dataset_pre.ratingkanjis(2,j);
         diffkanji(4,j) = valuekanji;
         diffkanji(5,j) = dataset_pre.FOC(value(1),5);
+        diffkanji(6,j) = order_kanjis;
+
     end
     diffkanji = diffkanji';
-    diffkanji = sortrows(diffkanji,4);
+    diffkanji = sortrows(diffkanji,6);
     diffkanji = diffkanji';
     results(i,40:45) = diffkanji(1,:);
 
@@ -389,15 +392,20 @@ else
             prepostkanjis = find(dataset.ratingkanjis(5,j) == dataset.postratingkanjis(5,:));
             value = find(dataset.ratingkanjis(5,j) == dataset.FOC(:,5));
             valuekanji = dataset.FOC(value(1),8) ;
+            
+            cs_id = find(dataset.FOC(value(1),5) ==  forcedchoicekanjis(:,4));
+            order_kanjis = forcedchoicekanjis(cs_id(1),2);
 
             diffkanji(1,j) = dataset.ratingkanjis(2,j);
             diffkanji(2,j) = dataset.postratingkanjis(2,prepostkanjis);
             diffkanji(3,j) = dataset.postratingkanjis(2,prepostkanjis) - dataset.ratingkanjis(2,j);
             diffkanji(4,j) = valuekanji;
             diffkanji(5,j) = dataset.FOC(value(1),5);
+            diffkanji(6,j) = order_kanjis;
+            
         end
         diffkanji = diffkanji';
-        diffkanji = sortrows(diffkanji,4);
+        diffkanji = sortrows(diffkanji,6);
         diffkanji = diffkanji';
         results(i,40:45) = diffkanji(1,:);
 
@@ -650,6 +658,10 @@ rm = fitrm(t,'S1-S6~1','WithinDesign',within);
 disp('rmANOVA on kanjis ratings')
 ranovatbl
 
+[h,p,ci,stats] = ttest(pre_kanji(:,1), pre_kanji(:,2))
+[h,p,ci,stats] = ttest(pre_kanji(:,3), pre_kanji(:,4))
+[h,p,ci,stats] = ttest(pre_kanji(:,5), pre_kanji(:,6))
+
 
 %calculate partial eta square 
 disp('overall choice probability rmANOVA effect size of ME stimulus pre')
@@ -657,6 +669,14 @@ cp_data=data(:,1);
 data_rm = [data(:,1) data(:,2) data(:,3) data(:,4) data(:,5) data(:,6)];
 
 mes1way(data_rm,'partialeta2','isDep',1)
+
+%pre-post change in kanji ratings
+prepost_kanjis = results(:,52:57);
+mean(prepost_kanjis)
+
+[h,p,ci,stats] = ttest(prepost_kanjis(:,1), prepost_kanjis(:,2))
+[h,p,ci,stats] = ttest(prepost_kanjis(:,3), prepost_kanjis(:,4))
+[h,p,ci,stats] = ttest(prepost_kanjis(:,5), prepost_kanjis(:,6))
 
 %% overall choice probabilities for CS during choice probe phase
 %terminology is CS1A = CS-A, CS1B = CS-B, CS2A = CS0A, CS2B = CS0B, CS3A = CS+A, CS3B = CS+B
