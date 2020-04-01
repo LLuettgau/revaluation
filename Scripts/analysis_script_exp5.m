@@ -206,16 +206,19 @@ results(i,16) =  medianRTlowval;
 for j = 1:4
     prepostkanjis = find(candyman_control.ratingkanjis(5,j) == candyman_control.postratingkanjis(5,:));
     value = find(candyman_control.ratingkanjis(5,j) == candyman_control.FOC(:,5));
-    valuekanji = candyman_control.FOC(value(1),8) ;
+    valuekanji = candyman_control.FOC(value(1),8);
+    order_kanjis = candyman_control.FOC(value(1),26);
     
     diffkanji(1,j) = candyman_control.ratingkanjis(2,j);
     diffkanji(2,j) = candyman_control.postratingkanjis(2,prepostkanjis);
     diffkanji(3,j) = candyman_control.postratingkanjis(2,prepostkanjis) - candyman_control.ratingkanjis(2,j);
     diffkanji(4,j) = valuekanji;
     diffkanji(5,j) = candyman_control.FOC(value(1),5);
+    diffkanji(6,j) = order_kanjis;
+    
 end
 diffkanji = diffkanji';
-diffkanji = sortrows(diffkanji,4);
+diffkanji = sortrows(diffkanji,6);
 diffkanji = diffkanji';
 results(i,48:51) = diffkanji(1,:);
 
@@ -322,6 +325,7 @@ disp('overall choice probability rmANOVA effect size of ME stimulus pre')
 data_rm = [data(:,1) data(:,2) data(:,3) data(:,4)];
 
 mes1way(data_rm,'partialeta2','isDep',1)
+
 
 %% overall choice probabilities for CS during choice probe phase
 %terminology is CS1A = CS080, CS1B = CS020, CS3A = CS+80, CS3B = CS+20
