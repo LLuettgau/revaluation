@@ -165,19 +165,6 @@ CS3B = sum(forcedchoicekanjis(pos_cS3BL,12) == 1) + sum(forcedchoicekanjis(pos_c
 percentchoiceCS3B = CS3B/(length(pos_cS3BL) + length(pos_cS3BR)); %length(forcedchoicekanjis(pos_cS3BL,12) == 1 & forcedchoicekanjis(pos_cS3BR,12) == 2);
 results(i,13) = percentchoiceCS3B;
 
-%% loop over all single comparisons
-%results_new = zeros(1,147);
-%m = chosen, n = unchosen
-for m = 1:4
-    for n = 1:4
-        if n ~= m
-            CSvCS = sum(forcedchoicekanjis(:,2) == m & forcedchoicekanjis(:,3) == n & forcedchoicekanjis(:,12) == 1 | forcedchoicekanjis(:,2) == n & forcedchoicekanjis(:,3) == m & forcedchoicekanjis(:,12) == 2);
-            percentchoiceCS = CSvCS/sum(forcedchoicekanjis(:,2) == m & forcedchoicekanjis(:,3) == n | forcedchoicekanjis(:,2) == n & forcedchoicekanjis(:,3) == m);
-            pairwise_comp(n,m) = percentchoiceCS;
-        end
-    end
-end
-
 %% Reaction times during decision probe
 
 %RT for CS+ decisions
