@@ -346,12 +346,12 @@ disp('S1B')
 mes(res_to_plot(:,2),0.5,'U3_1')
 
 disp('S3A')
-[p3,h,STATS] = signrank(res_to_plot(:,3), 0.5, 'tail', 'left')
+[p3,h,STATS] = signrank(res_to_plot(:,3), 0.5, 'tail', 'right')
 %calculate effect size
 mes(res_to_plot(:,3),0.5,'U3_1')
 
 disp('S3B')
-[p3,h,STATS] = signrank(res_to_plot(:,4), 0.5, 'tail', 'right')
+[p3,h,STATS] = signrank(res_to_plot(:,4), 0.5, 'tail', 'left')
 %calculate effect size
 mes(res_to_plot(:,4),0.5,'U3_1')
 
