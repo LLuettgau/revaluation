@@ -1,6 +1,7 @@
 %Analysis script for behavioral, brain-behavioral correlation data 
-%and for running statistics on extracted representational similarity results 
-%(Luettgau, Tempelmann, Kaiser & Jocham)
+%and for running statistics on extracted representational similarity
+%results for Experiments 1 - 4
+%(Luettgau, Tempelmann, Kaiser, Jocham)
 
 clc; clear all; close all;
 
@@ -301,25 +302,16 @@ for i = 1:length(data)
     if sample == 1 || sample == 4
        critical_pairs(i,1:6) = pairwise_comp(:,3)';
        critical_pairs(i,7:12) = pairwise_comp(:,5)'; 
-       
-       critical_diff(i,1) = pairwise_comp(3,5);%CS0AvsCS+A
-       critical_diff(i,2) = pairwise_comp(4,6);%CS0BvsCS+B
-
+      
     elseif sample == 2
        critical_pairs(i,1:6) = pairwise_comp(:,1)';
        critical_pairs(i,7:12) = pairwise_comp(:,3)'; 
-       
-       critical_diff(i,1) = pairwise_comp(1,3);%CS-AvsCS0A
-       critical_diff(i,2) = pairwise_comp(2,4);%CS-BvsCS0B
+
     elseif sample == 3
        critical_pairs(i,1:6) = pairwise_comp(:,1)';
        critical_pairs(i,7:12) = pairwise_comp(:,3)';  
        critical_pairs(i,13:18) = pairwise_comp(:,5)'; 
        
-       critical_diff(i,1) = pairwise_comp(1,3);%CS-AvsCS0A
-       critical_diff(i,2) = pairwise_comp(2,4);%CS-BvsCS0B
-       critical_diff(i,3) = pairwise_comp(3,5);%CS0AvsCS+A
-       critical_diff(i,4) = pairwise_comp(4,6);%CS0BvsCS+B
     end
 
     %read-out within-category choices
@@ -327,6 +319,7 @@ for i = 1:length(data)
     within_choices(i,2) = results(i,28);
     within_choices(i,3) = results(i,38);
      
+    
 %% Difference score pre- to post-exp rating of CS
 
 if sample == 4
@@ -365,7 +358,6 @@ if sample == 4
         val =  unique(dataset_pre.FOC(:,7));
         prefood = find(dataset_pre.ratingfoodcues(5,:) == val(j));
         postfood = find(dataset_post.postratingfoodcues(5,:) == val(j));
-        valfood = dataset_pre.FOC(val(j),8);
 
         difffood(1,j) = val(j);
         difffood(2,j) = dataset_pre.ratingfoodcues(2,prefood);
@@ -426,8 +418,7 @@ else
          if isfield(dataset,'postratingfoodcues')   
             postfood = find(dataset.postratingfoodcues(5,:) == val(j));
          end
-            valfood = dataset.FOC(val(j),8);
-
+         
             difffood(1,j) = val(j);
             difffood(2,j) = dataset.ratingfoodcues(2,prefood);
          if isfield(dataset,'postratingfoodcues')   
@@ -458,17 +449,20 @@ end
 %% responses during the attentional control task in fMRI
 if sample == 4
     
+    %only those trials that include attentional control task
     prereptrials = find(dataset.prerepsup(:,11) == 1);
     repsup_pre = dataset.prerepsup(prereptrials,:);
     
     postreptrials = find(dataset.postrepsup(:,11) == 1);
     repsup_post = dataset.postrepsup(postreptrials,:);
     
+    %calculate overall number and percentage correct trials
     results(i,142) = sum(repsup_pre(:,18)) + sum(repsup_post(:,18)) ;
     results(i,143) = results(i,142)/144;
 
     %correct answers during rep sup pre
-
+    
+    %exclude trials with missing responses
     repsup_pre = repsup_pre((~isnan(repsup_pre(:,15)) == 1),:);
 
     correct_1_1_trials_pre = length(find(repsup_pre(:,2) == 1 & repsup_pre(:,3) == 1 & repsup_pre(:,18) == 1))/length(find(repsup_pre(:,2) == 1 & repsup_pre(:,3) == 1));
@@ -508,6 +502,8 @@ if sample == 4
     results(i,111) = correct_6_trials_pre;
 
     %correct answers during rep sup post
+    
+    %exclude trials with missing responses
     repsup_post = repsup_post((~isnan(repsup_post(:,15)) == 1),:);
 
     correct_1_1_trials_post = length(find(repsup_post(:,2) == 1 & repsup_post(:,3) == 1 & repsup_post(:,18) == 1))/length(find(repsup_post(:,2) == 1 & repsup_post(:,3) == 1));
@@ -571,7 +567,6 @@ if exclude_outliers == 1
        range_kanjis(i,:) = NaN;
        critical_pairs(i,:) = NaN;
        within_choices(i,:) = NaN;
-       critical_diff(i,:) = NaN;
     end
 elseif exclude_outliers == 2
     if results(i,2) > choice_crit
@@ -593,13 +588,11 @@ pos_rt = find(results(:,145) == 0);
 results = results(pos_rt,:);
 critical_pairs = critical_pairs(pos_rt,:);
 within_choices = within_choices(pos_rt,:);
-critical_diff = critical_diff(pos_rt,:);
 
 if exclude_outliers == 1
     results = results(~isnan(results(:,2)),:);
     critical_pairs = critical_pairs(~isnan(critical_pairs(:,1)),:);
     within_choices = within_choices(~isnan(within_choices(:,1)),:);
-    critical_diff = critical_diff(~isnan(critical_diff(:,1)),:);
 elseif exclude_outliers == 2
     results = results(~isnan(results(:,2)),:);   
 end
@@ -664,7 +657,7 @@ ranovatbl
 
 
 %calculate partial eta square 
-disp('overall choice probability rmANOVA effect size of ME stimulus pre')
+disp('overall rmANOVA effect size of ME stimulus pre')
 cp_data=data(:,1);
 data_rm = [data(:,1) data(:,2) data(:,3) data(:,4) data(:,5) data(:,6)];
 
@@ -711,7 +704,7 @@ disp('overall choice probability rmANOVA')
 ranovatbl
 
 %calculate partial eta square 
-disp('overall choice probability rmANOVA effect size of ME valence')
+disp('overall choice probability rmANOVA effect size')
 cp_data=data(:,1);
 stimulus = [repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1)];
 valence = [repmat(1,length(cp_data),1);repmat(1,length(cp_data),1);repmat(2,length(cp_data),1);repmat(2,length(cp_data),1);repmat(3,length(cp_data),1);repmat(3,length(cp_data),1)];
@@ -776,7 +769,7 @@ elseif sample == 2
 elseif sample == 3
     %CS1A = CS-A vs. CS1B = CS-B
     disp('overall choice probability CS-A vs. CS-B')    
-    [P,H,STATS] = signrank(CS1A, CS1B, 'tail', 'left')
+    [P,H,STATS] = signrank(CS1A, CS1B)
     
     %calculate Cohen's U3
     disp('overall choice probability CS-A vs. CS-B effect size')
@@ -793,7 +786,7 @@ elseif sample == 3
     
     %CS3A = CS+A vs. CS3B = CS+B
     disp('overall choice probability CS+A vs. CS+B')
-    [P,H,STATS] = signrank(CS3A, CS3B, 'tail', 'right')
+    [P,H,STATS] = signrank(CS3A, CS3B)
     
     %calculate Cohen's U3
     disp('overall choice probability CS+A vs. CS+B effect size')
@@ -1185,40 +1178,6 @@ if sample == 4
     cols.grey = [0.7843 0.7843 0.7843];
     cols.dgrey = [0.1922 0.2000 0.2078];
 
-
-    b = figure();
-    bar(nanmean(hipp_to_plot), 'k', 'BarWidth', 0.6); hold all;
-    errorbar(1:2,nanmean(hipp_to_plot),std(hipp_to_plot)./sqrt(size(hipp_to_plot,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
-    Labels ={'PRE', 'POST'};
-    ylim([-50 100]); 
-    xlim([0.5 2.5]); 
-    set(gca,'XTick',1:2,'XTickLabel', Labels);
-    box off
-    set(findobj(gca,'type','line'),'linew',5)
-    set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
-    ybounds = ylim;
-    set(gca,'YTick',ybounds(1):50:ybounds(2), 'FontSize',15,'FontName', 'Arial');
-    set(gca,'TickDir','out')
-    set(gca,'XTickLabel', Labels, 'FontSize',15,'FontName', 'Arial');
-    set(gca,'XTickLabelRotation', 45);
-    set(gcf,'color','w');
-    set(gca,'ycolor',cols.k)
-    set(gca,'xcolor',cols.k)
-    ticklabels_new = cell(size(Labels));
-    for i = 1:length(Labels)
-        ticklabels_new{i} = ['\color{black} ' Labels{i}];
-    end
-    % set the tick labels
-    set(gca, 'XTickLabel', ticklabels_new,'FontSize',15,'FontName', 'Arial');
-    % prepend a color for each tick label
-    LabelsY = get(gca,'YTickLabel');
-    ticklabels_ynew = cell(size(LabelsY));
-    for i = 1:length(LabelsY)
-        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
-    end
-    % set the tick labels
-    set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',15,'FontName', 'Arial');
-
     positions = [1 2 4 5 7 8];   
     pos = [positions-.2; ...
            positions+.2];
@@ -1275,45 +1234,7 @@ if sample == 4
     % set the tick labels
     set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',30,'FontName', 'Arial');
 
-%     inset(a, b, .20);
-%     set(gcf,'color','w');
-
-    
-    c = figure();
-    bar(nanmean(ofc_to_plot), 'k', 'BarWidth', 0.6); hold all;
-    errorbar(1:2,nanmean(ofc_to_plot),std(ofc_to_plot)./sqrt(size(ofc_to_plot,1)), 'linestyle', 'none', 'color', 'k', 'CapSize', 0, 'LineWidth', 2.5);
-    Labels ={'PRE', 'POST'};
-    ylim([-50 100]); 
-    xlim([0.5 2.5]); 
-    set(gca,'XTick',1:2,'XTickLabel', Labels);
-    box off
-    set(findobj(gca,'type','line'),'linew',5)
-    set(gca,'TickLength',[0.01, 0.001],'linewidth',2.5)
-    ybounds = ylim;
-    set(gca,'YTick',ybounds(1):50:ybounds(2), 'FontSize',15,'FontName', 'Arial');
-    set(gca,'TickDir','out')
-    set(gca,'XTickLabel', Labels, 'FontSize',15,'FontName', 'Arial');
-    set(gca,'XTickLabelRotation', 45);
-    set(gcf,'color','w');
-    set(gca,'ycolor',cols.k)
-    set(gca,'xcolor',cols.k)
-    ticklabels_new = cell(size(Labels));
-    for i = 1:length(Labels)
-        ticklabels_new{i} = ['\color{black} ' Labels{i}];
-    end
-    % set the tick labels
-    set(gca, 'XTickLabel', ticklabels_new,'FontSize',15,'FontName', 'Arial');
-    % prepend a color for each tick label
-    LabelsY = get(gca,'YTickLabel');
-    ticklabels_ynew = cell(size(LabelsY));
-    for i = 1:length(LabelsY)
-        ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
-    end
-    % set the tick labels
-    set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',15,'FontName', 'Arial');
-
-
-
+    %OFC
     mean_ofc_asso_strength = [mean(right_ofc_pre_1Avs1B);
                                mean(right_ofc_post_1Avs1B);
                                NaN;
@@ -1323,7 +1244,7 @@ if sample == 4
                                mean(-1*(right_ofc_pre_3Avs3B));
                                mean(-1*(right_ofc_post_3Avs3B))];
 
-    d = figure();  
+    b = figure();  
     bar(1:8,mean_ofc_asso_strength, 'w', 'BarWidth', 0.6, 'linewidth', 2.5); hold all;
     scatter(linspace(pos(1,1), pos(2,1),length(ofc_asso_strength(:,1))), ofc_asso_strength(:,1), 150, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5); 
     scatter(linspace(pos(1,2), pos(2,2), length(ofc_asso_strength(:,2))), ofc_asso_strength(:,2), 150, 'o', 'MarkerFaceColor',  cols.grey, 'MarkerEdgeColor', cols.k,'LineWidth',0.5);
@@ -1362,10 +1283,6 @@ if sample == 4
     end
     % set the tick labels
     set(gca, 'YTickLabel', ticklabels_ynew,'FontSize',30,'FontName', 'Arial');
-
-
-%     inset(d, c, .20);
-%     set(gcf,'color','w');
 
 
 
@@ -1415,7 +1332,7 @@ if sample == 4
     [rho,p] = corr(diff_2A_2B,hippocampus_post_2Avs2B, 'type', 'Spearman')
     [rho,p] = corr(res_to_plot(:,3),hippocampus_post_2Avs2B, 'type', 'Spearman')
 
-    %% use this plot for illustration in paper - Figure S4A
+    %% use this plot for illustration in paper - Figure S5A
     %calculation of within-category choice prob. differences
     results_pairs = within_choices;
 
@@ -1604,7 +1521,7 @@ if sample == 4
 
 
 
-    %% cached value control analysis - similarity with US- 
+    %% cached value control analysis - CS0A suppression with US- 
 
     [P,H,STATS] = signrank(hippo_cached_value(:,1), 0)
     [P,H,STATS] = signrank(hippo_cached_value(:,2), 0)
@@ -1664,7 +1581,7 @@ if sample == 4
     [rho,p] = corr(diff_2A_2B,diff_vta_cached_value, 'type', 'Spearman')
     
     
-    %% Individual contrasts for weakening of CS0A and strengthening of CS+A - Figure S2
+    %% Individual contrasts for weakening of CS0A and strengthening of CS+A
     
     %Hippocampus     
     hipp_individual_asso = [hippocampus_pre_2A hippocampus_post_2A -1*(hippocampus_pre_3A) -1*(hippocampus_post_3A)];
@@ -1715,12 +1632,14 @@ if sample == 4
     
     
     [P,H,STATS] = signrank(hipp_individual_asso(:,1), hipp_individual_asso(:,2))
+    %calculate Cohen's U3
+    mes(hipp_individual_asso(:,2), hipp_individual_asso(:,1),'U3','isDep',1)
     
     [P,H,STATS] = signrank(hipp_individual_asso(:,3), hipp_individual_asso(:,4))
     %calculate Cohen's U3
-    mes(hipp_individual_asso(:,4), hipp_individual_asso(:,3),'U3','isDep',1)
+    mes(hipp_individual_asso(:,3), hipp_individual_asso(:,4),'U3','isDep',1)
 
-    % plot
+    % plot individual contrasts for weakening of CS0A and strengthening of CS+A - Figure S3A
     
     cols.k = [0 0 0];
     cols.b = [0 .058 .686];
@@ -1832,13 +1751,17 @@ if sample == 4
     
     
     [P,H,STATS] = signrank(ofc_individual_asso(:,1), ofc_individual_asso(:,2))
+    %calculate Cohen's U3
+    mes(ofc_individual_asso(:,2), ofc_individual_asso(:,1),'U3','isDep',1)
+    
     
     [P,H,STATS] = signrank(ofc_individual_asso(:,3), ofc_individual_asso(:,4))
     %calculate Cohen's U3
     mes(ofc_individual_asso(:,4), ofc_individual_asso(:,3),'U3','isDep',1)
 
     
-    % plot 
+    % plot individual contrasts for weakening of CS0A and strengthening of CS+A - Figure S3B
+
     cols.k = [0 0 0];
     cols.b = [0 .058 .686];
     cols.y = [1  .828 0];
@@ -1916,7 +1839,7 @@ if sample == 4
     mean(pool_effect)
     std(pool_effect)
     %calculate effect size
-    mes(pool_effect,0,'U3_1')
+    mes(pool_effect',0,'U3_1')
 
     %pool across CS-A/B repetition similarity changes pre-post
     pool_control = mean(diff_to_plot(1:2,:));
@@ -1925,7 +1848,7 @@ if sample == 4
     mean(pool_control)
     std(pool_control)
     %calculate effect size
-    mes(pool_control,0,'U3_1')
+    mes(pool_control',0,'U3_1')
     
     
     %compare pooled CS0A/B and CS+A/B (effect) and pooled CS-A/B (control)
@@ -1934,7 +1857,7 @@ if sample == 4
     [p,h,STATS] = signrank(pool_effect,pool_control, 'tail','left')
 
     %calculate Cohen's U3
-    mes(pool_effect, pool_control,'U3','isDep',1)    
+    mes(pool_effect', pool_control,'U3','isDep',1)    
     
     
     %test each pooled effect vs. 0 
@@ -1946,7 +1869,7 @@ if sample == 4
     std(pool_csminus)
     
     %calculate effect size
-    mes(pool_csminus,0,'U3_1')
+    mes(pool_csminus',0,'U3_1')
     
     %CS0A/B
     pool_csnull = mean(diff_to_plot(3:4,:));
@@ -1956,7 +1879,7 @@ if sample == 4
     std(pool_csnull)
     
     %calculate effect size
-    mes(pool_csnull,0,'U3_1')
+    mes(pool_csnull',0,'U3_1')
     
     %CS+A/B 
     pool_csplus = mean(diff_to_plot(5:6,:));
@@ -1966,7 +1889,7 @@ if sample == 4
     std(pool_csplus) 
     
     %calculate effect size
-    mes(pool_csplus,0,'U3_1')
+    mes(pool_csplus',0,'U3_1')
     
     
    
@@ -2040,7 +1963,7 @@ if sample == 4
     mean(pool_effect)
     std(pool_effect)
     %calculate effect size
-    mes(pool_effect,0,'U3_1')
+    mes(pool_effect',0,'U3_1')
 
     %pool across CS-A/B repetition similarity changes pre-post
     pool_control = mean(diff_to_plot(1:2,:));
@@ -2049,7 +1972,7 @@ if sample == 4
     mean(pool_control)
     std(pool_control)
     %calculate effect size
-    mes(pool_control,0,'U3_1')
+    mes(pool_control',0,'U3_1')
     
     
     %compare pooled CS0A/B and CS+A/B (effect) and pooled CS-A/B (control)
@@ -2058,7 +1981,7 @@ if sample == 4
     [p,h,STATS] = signrank(pool_effect,pool_control, 'tail','left')
 
     %calculate Cohen's U3
-    mes(pool_effect, pool_control,'U3','isDep',1)    
+    mes(pool_effect', pool_control','U3','isDep',1)    
     
     
     %test each pooled effect vs. 0 
@@ -2070,7 +1993,7 @@ if sample == 4
     std(pool_csminus)
     
     %calculate effect size
-    mes(pool_csminus,0,'U3_1')
+    mes(pool_csminus',0,'U3_1')
     
     %CS0A/B
     pool_csnull = mean(diff_to_plot(3:4,:));
@@ -2080,7 +2003,7 @@ if sample == 4
     std(pool_csnull)
     
     %calculate effect size
-    mes(pool_csnull,0,'U3_1')
+    mes(pool_csnull',0,'U3_1')
     
     %CS+A/B 
     pool_csplus = mean(diff_to_plot(5:6,:));
@@ -2090,7 +2013,7 @@ if sample == 4
     std(pool_csplus) 
     
     %calculate effect size
-    mes(pool_csplus,0,'U3_1')
+    mes(pool_csplus',0,'U3_1')
     
    
     %Plot
@@ -2191,7 +2114,7 @@ if sample == 1 || sample == 4
     pos = [positions-.20; ...
         positions+.20];
     
-    %plot within-category choices
+    %plot within-category choices - Figure S2
     figure();
     x = 0:6;
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
@@ -2271,7 +2194,7 @@ elseif sample == 2
     pos = [positions-.20; ...
         positions+.20];
     
-    %plot within-category choices
+    %plot within-category choices - Figure S2
     figure();
     x = 0:6;
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
@@ -2350,7 +2273,7 @@ elseif sample == 3
     pos = [positions-.20; ...
         positions+.20];
     
-    %plot within-category choices
+    %plot within-category choices - Figure S2
     figure();
     x = 0:6;
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
@@ -2432,7 +2355,7 @@ if sample == 1 || sample == 4
     pos = [positions-.27; ...
         positions+.27];
     
-    %CS0A
+    %CS0A - Figure S2
     figure();
     x = 0:10;
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
@@ -2475,7 +2398,7 @@ if sample == 1 || sample == 4
     % set the tick labels
     set(gca, 'YTickLabel', ticklabels_ynew);
     
-    %CS+A
+    %CS+A - Figure S2
     figure();
     x = 0:10;
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
@@ -2556,8 +2479,8 @@ elseif sample == 2
     positions = [1 3 5 7 9];
     pos = [positions-.27; ...
         positions+.27];
-    
-    %CS-A
+     
+    %CS-A - Figure S2
     figure();
     x = 0:10;
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
@@ -2601,7 +2524,7 @@ elseif sample == 2
     % set the tick labels
     set(gca, 'YTickLabel', ticklabels_ynew);
     
-    %CS0A
+    %CS0A - Figure S2
     figure();
     x = 0:10;
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
@@ -2690,7 +2613,7 @@ elseif sample == 3
     pos = [positions-.27; ...
         positions+.27];
     
-    %CS-A
+    %CS-A - Figure S2
     figure();
     x = 0:10;
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
@@ -2734,7 +2657,7 @@ elseif sample == 3
     % set the tick labels
     set(gca, 'YTickLabel', ticklabels_ynew);
     
-    %CS0A
+    %CS0A - Figure S2
     figure();
     x = 0:10;
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
@@ -2777,8 +2700,8 @@ elseif sample == 3
     end
     % set the tick labels
     set(gca, 'YTickLabel', ticklabels_ynew);
-    
-    %CS+A
+     
+    %CS+A - Figure S2
     figure();
     x = 0:10;
     plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
@@ -2823,41 +2746,3 @@ elseif sample == 3
     set(gca, 'YTickLabel', ticklabels_ynew);
     
 end
-
-%% comparison of difference of binary choices between critical CS and respective same-value CS
-
-if sample == 1 || sample == 4
-        
-    median(critical_diff)
-    max(critical_diff)
-    min(critical_diff)
-    
-    
-    %CS0AvsCS+A and CS0BvsCS+B
-    [p,h,STATS] = signrank(critical_diff(:,1),critical_diff(:,2))
-
-elseif sample == 2
-        
-    median(critical_diff)
-    max(critical_diff)
-    min(critical_diff)
-    
-    
-    %CS-AvsCS0A and CS-BvsCS0B
-    [p,h,STATS] = signrank(critical_diff(:,1),critical_diff(:,2))
-    
-elseif sample == 3
-        
-    median(critical_diff)
-    max(critical_diff)
-    min(critical_diff)
-    
-    
-    %CS-AvsCS0A and CS-BvsCS0B
-    [p,h,STATS] = signrank(critical_diff(:,1),critical_diff(:,2))
-    
-    %CS0AvsCS+A and CS0BvsCS+B
-    [p,h,STATS] = signrank(critical_diff(:,3),critical_diff(:,4))
-
-end
-
