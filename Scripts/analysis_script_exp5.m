@@ -1,18 +1,15 @@
 %Analysis script for Experiment 5
-%(Luettgau, Tempelmann, Kaiser & Jocham)
+%(Luettgau, Tempelmann, Kaiser, Jocham)
 
 clc; clear all; close all;
 
-sample =1; 
-plots = 1;
+plots  = 1;
 
 exclude_outliers = 1; if exclude_outliers; choice_crit = .50; end %0 = all, 1 = no outliers, 2 = only outliers 
 
 addpath(genpath('...')) %set path to Effect size toolbox (needs to be downloaded at: https://github.com/hhentschke/measures-of-effect-size-toolbox)
 
-if sample == 1
-   cd '...' %set path to exp5
-end
+cd '...' %set path to exp5
 
 data = dir('candyman_controlLOG_4*.mat');
 
@@ -226,8 +223,7 @@ for j = 1:2
     val =  unique(candyman_control.FOC(:,7));
     prefood = find(candyman_control.ratingfoodcues(5,:) == val(j));
     postfood = find(candyman_control.postratingfoodcues(5,:) == val(j));
-    valfood = candyman_control.FOC(val(j),8);
-    
+   
     difffood(1,j) = val(j);
     difffood(2,j) = candyman_control.ratingfoodcues(2,prefood);
     difffood(3,j) = candyman_control.postratingfoodcues(2,postfood);
@@ -264,7 +260,6 @@ end
 
 end
 
-
 if exclude_outliers == 1
     results = results(~isnan(results(:,2)),:);
 elseif exclude_outliers == 2
@@ -272,23 +267,20 @@ elseif exclude_outliers == 2
 end
 
 
+%% CS/US subjective value (pre-rating)   
 
-%% CS subjective value (pre-rating)   
-
-disp('range of pre Kanjis ratings')
-range_kanjis
-range_kanjis(:,1)>60
-range_kanjis(:,2)<30
-
-range_kanjis(:,2) - range_kanjis(:,1) 
-
+%Pre-ratings of US
 pre_food = results(:,66:67);
 nanmean(pre_food)
 nanstd(pre_food)
 
-pre_kanji = results(:,48:51);
+%Pre-ratings of CS
+disp('range of pre Kanjis ratings')
+nanmean(range_kanjis)
+nanmean(range_kanjis(:,2) - range_kanjis(:,1)) 
 
 % repeated measures ANOVA on CS subjective value (pre-rating) 
+pre_kanji = results(:,48:51);
 data = pre_kanji;
 varNames = {'S1','S2','S3','S4'};
 
@@ -308,7 +300,7 @@ ranovatbl
 
 
 %calculate partial eta square 
-disp('overall choice probability rmANOVA effect size of ME stimulus pre')
+disp('overall rmANOVA effect size of ME stimulus pre')
 data_rm = [data(:,1) data(:,2) data(:,3) data(:,4)];
 
 mes1way(data_rm,'partialeta2','isDep',1)
@@ -317,15 +309,10 @@ mes1way(data_rm,'partialeta2','isDep',1)
 %% overall choice probabilities for CS during choice probe phase
 %terminology is CS1A = CS080, CS1B = CS020, CS3A = CS+80, CS3B = CS+20
 
-median(1-results(:,2))
-max(1-results(:,2))
-min(1-results(:,2))
-
 cS1A = results(:,10);
 cS1B = results(:,11);
 cS3A = results(:,12);
 cS3B = results(:,13);
-
 
 res_to_plot = [cS1A cS1B cS3A cS3B];
 
@@ -369,8 +356,7 @@ disp('S3B')
 mes(res_to_plot(:,4),0.5,'U3_1')
 
 
-%% plots
-
+%% plot results - Figure 1I
 
 cols.k = [0 0 0];
 cols.b = [0   15 175];
@@ -390,44 +376,41 @@ pos = [positions-.05; ...
    
 critical_choices = [res_to_plot(:,1) res_to_plot(:,3)];
 
-   figure();
-   x = 0:1;
-   plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
-   hold all;
-   boxplot(critical_choices, {reshape(['A','B'],2,1) [1;2]}, 'positions',positions, 'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.15,'FactorGap',1, 'Whisker',0); hold all;
-   scatter(linspace(pos(1,1), pos(2,1),length(res_to_plot)), res_to_plot(:,1), 200, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',1.5); hold all;
-   scatter(linspace(pos(1,2), pos(2,2), length(res_to_plot)), res_to_plot(:,3), 200, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',1.5);
-   LabelsCS ={'CS^{0}_{.8} vs CS^{0}_{.2}', 'CS^{+}_{.8} vs CS^{+}_{.2}'};
-   ylim([-.05 1.05]);     
-   xlim([0 1]);
-   box off
-   set(findobj(gca,'type','line'),'linew',5)
-   set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
-   ybounds = ylim;
-   set(gca,'YTick',0:0.25:1, 'FontSize',30,'FontName', 'Arial');    
-   set(gca,'TickDir','out')
-   set(gca,'xtick',positions)
-   set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
-   %set(gca,'XTickLabelRotation', 45);
-   set(gcf,'color','w');
-   set(gca,'ycolor',cols.k)
-   set(gca,'xcolor',cols.k)
-   %ylabel('Choice Probability', 'FontSize',60,'FontType', 'Arial','Color','k')
-   % prepend a color for each tick label
-   ticklabels_new = cell(size(LabelsCS));
-   for i = 1:length(LabelsCS)
-       ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
-   end
-   % set the tick labels
-   set(gca, 'XTickLabel', ticklabels_new);
-   % prepend a color for each tick label
-   LabelsY = get(gca,'YTickLabel');
-   ticklabels_ynew = cell(size(LabelsY));
-   for i = 1:length(LabelsY)
-       ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
-   end
-   % set the tick labels
-   set(gca, 'YTickLabel', ticklabels_ynew);
-
-
-
+figure();
+x = 0:1;
+plot(x,ones(1,length(x))*0.5, 'k--', 'linewidth', 4);
+hold all;
+boxplot(critical_choices, {reshape(['A','B'],2,1) [1;2]}, 'positions',positions, 'boxstyle', 'outline', 'colors', cols.k, 'symbol','','Widths',0.15,'FactorGap',1, 'Whisker',0); hold all;
+scatter(linspace(pos(1,1), pos(2,1),length(res_to_plot)), res_to_plot(:,1), 200, 'o', 'MarkerFaceColor', cols.y, 'MarkerEdgeColor', cols.y,'LineWidth',1.5); hold all;
+scatter(linspace(pos(1,2), pos(2,2), length(res_to_plot)), res_to_plot(:,3), 200, 'o', 'MarkerFaceColor', cols.b, 'MarkerEdgeColor', cols.b,'LineWidth',1.5);
+LabelsCS ={'CS^{0}_{.8} vs CS^{0}_{.2}', 'CS^{+}_{.8} vs CS^{+}_{.2}'};
+ylim([-.05 1.05]);
+xlim([0 1]);
+box off
+set(findobj(gca,'type','line'),'linew',5)
+set(gca,'TickLength',[0.01, 0.001],'linewidth',1.5)
+ybounds = ylim;
+set(gca,'YTick',0:0.25:1, 'FontSize',30,'FontName', 'Arial');
+set(gca,'TickDir','out')
+set(gca,'xtick',positions)
+set(gca,'XTickLabel', LabelsCS, 'FontSize',30,'FontName', 'Arial');
+%set(gca,'XTickLabelRotation', 45);
+set(gcf,'color','w');
+set(gca,'ycolor',cols.k)
+set(gca,'xcolor',cols.k)
+%ylabel('Choice Probability', 'FontSize',60,'FontType', 'Arial','Color','k')
+% prepend a color for each tick label
+ticklabels_new = cell(size(LabelsCS));
+for i = 1:length(LabelsCS)
+    ticklabels_new{i} = ['\color{black} ' LabelsCS{i}];
+end
+% set the tick labels
+set(gca, 'XTickLabel', ticklabels_new);
+% prepend a color for each tick label
+LabelsY = get(gca,'YTickLabel');
+ticklabels_ynew = cell(size(LabelsY));
+for i = 1:length(LabelsY)
+    ticklabels_ynew{i} = ['\color{black} ' LabelsY{i}];
+end
+% set the tick labels
+set(gca, 'YTickLabel', ticklabels_ynew);
