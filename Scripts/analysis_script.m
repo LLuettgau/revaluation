@@ -155,7 +155,6 @@ if exclude_outliers == 1
    exclude = 940; %participant broke up MRI session after first RS run
 end
 
-long_CS = [];
 
 for i = 1:length(data)
     %% load data set
@@ -279,18 +278,7 @@ for i = 1:length(data)
     %order is CS-A, CS-B, CS0A, CS0B, CS+A, CS+B
     results(i,4:9) = CS;
     
-    %long format for MLM
-    if exclude_outliers == 1
-        if results(i,2) >= choice_crit & results(i,145) == 0 & sum(results(i,1) == exclude) == 0
-            
-            condition = 1:6;
-            CS_val = [1;1;2;2;3;3];
-            CS_ID = repmat(1:2,1,3);
-            
 
-            long_CS = [long_CS; repmat(name,6,1) condition' CS_val CS_ID' CS_l'];
-        end
-    end
     %% Decision Choice Probe - loop over all single value categroy specific comparisons (supplementary figure 2)
     %m = chosen, n = unchosen
     %order is 1 = CS-A, 2 = CS-B, 3 = CS0A, 4 = CS0B, 5 = CS+A, 6 = CS+B
@@ -596,14 +584,6 @@ if exclude_outliers == 1
 end
 
 end
-varNames = {'SubID','CS', 'Valence', 'Type', 'choices'};
-CS_l = array2table(long_CS,'VariableNames',varNames);
-
-
-writetable(CS_l,'candyman2_long.csv','Delimiter',',');
-
-
-
 
 %automated exclusion based on non-responses during Pavlovian learning phase cover task
 pos_rt = find(results(:,145) == 0);

@@ -15,8 +15,6 @@ data = dir('candyman_controlLOG_4*.mat');
 
 format compact 
 
-long_CS = [];
-
 for i = 1:length(data)
 load(data(i).name)
 
@@ -122,19 +120,6 @@ for m = 1:4
     CS_l(m) = sum(forcedchoicekanjis(posL,12) == 1) + sum(forcedchoicekanjis(posR,12) == 2);
 
 end
-
-    %long format for MLM
-    if exclude_outliers == 1
-        if results(i,2) >= choice_crit & results(i,146) == 0
-            
-            condition = 1:2;
-            CS_val = [1;2];
-            CS_ID = [1;2];
-            CS_l = CS_l(1:2:end);
-
-            long_CS = [long_CS; repmat(name,2,1) condition' CS_val CS_ID CS_l'];
-        end
-    end
 
 
 %% dumb coding
@@ -282,12 +267,6 @@ if exclude_outliers == 1
 elseif exclude_outliers == 2
     results = results(~isnan(results(:,2)),:);   
 end
-
-varNames = {'SubID','CS', 'Valence', 'Type', 'choices'};
-CS_l = array2table(long_CS,'VariableNames',varNames);
-
-
-writetable(CS_l,'candyman_control_long.csv','Delimiter',',');
 
 %% CS/US subjective value (pre-rating)   
 
